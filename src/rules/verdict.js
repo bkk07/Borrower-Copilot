@@ -183,7 +183,7 @@ function decideVerdict(profile, cf, emiNeeded) {
 }
 
 function emergencyNeutral(profile) {
-  return profile.loanPurpose === "medical";
+  return profile.loanPurpose === "medical" || profile.loanPurpose === "education";
 }
 
 function fmt(n) {

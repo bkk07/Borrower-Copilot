@@ -116,12 +116,16 @@ body {
 .bc-bar { height: .8rem; border-radius: 999px; background: #e9e1d0; overflow: hidden; }
 .bc-bar > div { height: 100%; border-radius: 999px; width: 0; transition: width 1s cubic-bezier(.2,.7,.2,1); }
 
-/* entrance animation */
+/* entrance animation — respects prefers-reduced-motion */
 @keyframes bc-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 .anim-rise { animation: bc-rise .45s ease both; }
 .anim-rise-1 { animation: bc-rise .45s .06s ease both; }
 .anim-rise-2 { animation: bc-rise .45s .12s ease both; }
 .anim-rise-3 { animation: bc-rise .45s .18s ease both; }
+@media (prefers-reduced-motion: reduce) {
+  .anim-rise, .anim-rise-1, .anim-rise-2, .anim-rise-3 { animation: none; }
+  .bc-bar > div, .bc-progress > div { transition: none; }
+}
 
 /* rate band track */
 .bc-track { position: relative; height: .8rem; border-radius: 999px; background: linear-gradient(90deg, #d9e8dc, #f3e3bd 55%, #f0cfc9); }
@@ -143,10 +147,14 @@ details.bc-details p { margin-top: .4rem; color: #4a4238; font-size: .9rem; line
 }
 
 @media print {
+  @page { size: A4; margin: 12mm; }
   .no-print { display: none !important; }
   header, .no-print, footer { display: none !important; }
   body { background: #fff; }
   .bc-card { box-shadow: none; break-inside: avoid; }
-  #negotiation-card { box-shadow: none; }
+  #negotiation-card { box-shadow: none; break-inside: avoid; }
   #root { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
 }
+
+/* visible focus */
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }

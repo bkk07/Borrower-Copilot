@@ -94,21 +94,32 @@ export function isAnswered(q, draft) {
 }
 
 // Lane routing (Final Spec §3 + §7-B). Returns { lane, guessed, reason }.
+// Accepts either a form draft or a borrowerProfile (resolve both shapes).
 export function resolveLane(p) {
   const hasFreeCollateral =
-    (p.collateralAvailable === true || p.collateralAvailable === "yes") &&
-    (p.collateralEncumbered === false || p.collateralEncumbered === "no" || p.collateralEncumbered == null) &&
-    Number(p.collateralValue) > 0;
+    (
+      (p.collateralAvailable === true || p.collateralAvailable === "yes") &&
+      (p.collateralEncumbered === false || p.collateralEncumbered === "no" || p.collateralEncumbered == null) &&
+      Number(p.collateralValue) > 0
+    ) || (
+      p.collateral?.available === true &&
+      (p.collateral?.encumbered === false || p.collateral?.encumbered == null) &&
+      Number(p.collateral?.value) > 0
+    );
 
-  if (p.loanType === "business_secured" || (hasFreeCollateral && p.incomeType === "self_employed")) {
+  if (p.loanType === "business_secured") {
+    return {
+      lane: "secured_business",
+      guessed: false,
+      reason: "Secured / business lane: you chose a secured / business loan.",
+    };
+  }
+  if (hasFreeCollateral && p.incomeType === "self_employed" && p.loanType !== "unsure" && p.loanType) {
     return {
       lane: "secured_business",
       guessed: false,
       reason: "Secured / business lane: collateral is available, so sanction follows LAP-style rules.",
     };
-  }
-  if (p.loanType === "business_secured") {
-    return { lane: "secured_business", guessed: false, reason: "You chose a secured / business loan." };
   }
   if (p.loanType === "informal_small_ticket" || p.incomeType === "informal") {
     return {

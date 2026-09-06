@@ -108,7 +108,7 @@ Mid-band rows are judgement interpolations. Confidence narrows the shown range: 
 
 Penalties: expenses unknown +1 · EMI amount unknown +2 · credit unknown +1 · savings unknown +1 ·
 branch extras missing +0.5 each · ITR missing +1 · informal income +1 (unverifiable) · cash-dominated self-employment +1 ·
-income as range +0.5. Confidence directly sets every shown range width (amounts ±8/15/25%, rates narrowed per §6).
+income as range +0.5 · upcoming large expense present does not directly penalise confidence (it is conservative via larger buffer + lump instead). Confidence directly sets every shown range width (amounts ±8/15/25%, rates narrowed per §6).
 
 ## 11. Product-specific rules (3 lanes only)
 

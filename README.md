@@ -19,6 +19,7 @@ Open the printed `http://localhost:5173`. To verify the production build:
 ```powershell
 npm run build
 npm run preview
+npm test
 ```
 
 Node 18+ required. That's it — no env vars, no services.
@@ -43,9 +44,10 @@ src/
   rules/stressTest.js   income −20% / rate +2pp scenarios
   rules/verdict.js      combines everything into O1–O4 + card
   rules/finance.js      EMI / principal maths, INR formatting
+  rules/engine.test.js  30+ engine tests (scenarios + edges + branching)
   components/           Questionnaire, ReviewAnswers, ResultsScreen,
                         OutputCard, StressTestCard, NegotiationCard
-  App.jsx               wizard state (welcome → quiz → review → results)
+  App.jsx               wizard state (localStorage persistence + live estimate + a11y)
 ```
 
 Rules are pure functions — no UI imports — so any threshold can be changed live without touching components.

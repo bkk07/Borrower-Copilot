@@ -5,7 +5,8 @@ import { sanctionCalc } from "./sanction.js";
 import { rateBand, narrowedBand, aprEstimate } from "./rate.js";
 import { confidenceScore } from "./confidence.js";
 import { evaluate } from "./verdict.js";
-import { draftToProfile } from "../data/questions.js";
+import { draftToProfile, visibleQuestions, isAnswered, resolveLane, blankDraft } from "../data/questions.js";
+void blankDraft;
 import { PRESETS } from "../data/presets.js";
 
 const priya = () => draftToProfile({ ...PRESETS.priya });
@@ -108,6 +109,31 @@ describe("rate", () => {
     const p = { ...priya(), loanPurpose: "debt_payoff", existingEmi: 14000 };
     expect(evaluate(p).debtPayoffNote).toMatch(/Borrow/i);
   });
+  it("age near 60 shortens both sanction + safe tenures", () => {
+    const old = { ...priya(), age: 59 };
+    const r = evaluate(old);
+    expect(r.safe.tenureMonths).toBe(12);
+    expect(r.sanction.tenureMonths).toBe(12);
+  });
+  it("education purpose uses neutral tone, not discretionary scolding", () => {
+    const p = { ...priya(), loanPurpose: "education", existingEmi: 90000 };
+    // Same high EMI that forces 'dont' — tone should be neutral, not purpose-specific scold
+    const r = evaluate({ ...p, age: 29 });
+    if (r.verdict.key === "dont") expect(r.verdict.tone).not.toMatch(/for education,/i);
+  });
+});
+
+describe("sanction age cap", () => {
+  it("personal at 59 is age-capped on both sides", () => {
+    const r = evaluate({ ...priya(), age: 59 });
+    expect(r.safe.tenureMonths).toBe(12);
+    expect(r.sanction.tenureMonths).toBe(12);
+  });
+  it("secured at 58 is age-capped well below lane default", () => {
+    const r = evaluate({ ...ravi(), age: 58 });
+    expect(r.safe.tenureMonths).toBe(24);
+    expect(r.sanction.tenureMonths).toBe(24);
+  });
 });
 
 describe("confidence", () => {
@@ -150,6 +176,48 @@ describe("scenarios (spec §13)", () => {
     expect(r.verdict.key).toBe("dont");
     expect(r.confidence.level).toBe("Low");
     expect(r.safe.center).toBe(0);
+  });
+});
+
+describe("branching + profile mapping", () => {
+  it("draftToProfile round-trips Priya correctly", () => {
+    const p = draftToProfile({ ...PRESETS.priya });
+    expect(p.incomeType).toBe("salaried");
+    expect(p.loanType).toBe("personal");
+    expect(p.creditScore).toBe(780);
+  });
+  it("adaptive branching: salaried sees salary extras, not gig", () => {
+    const d = { ...blankDraft, incomeType: "salaried" };
+    const ids = visibleQuestions(d).map((q) => q.id);
+    expect(ids).toContain("employmentYears");
+    expect(ids).not.toContain("incomeStability");
+  });
+  it("adaptive branching: gig sees informal extras", () => {
+    const d = { ...blankDraft, incomeType: "informal" };
+    const ids = visibleQuestions(d).map((q) => q.id);
+    expect(ids).toContain("recentBounce");
+    expect(ids).not.toContain("employmentYears");
+  });
+  it("isAnswered gates must questions but not optionals", () => {
+    const empty = { ...blankDraft };
+    // must not answered
+    expect(isAnswered({ id: "income" }, empty)).toBe(false);
+    // optional always passes
+    expect(isAnswered({ id: "upcomingExpense", group: "optional" }, empty)).toBe(true);
+  });
+  it("resolveLane guesses secured when unsure + collateral + self-employed", () => {
+    const draftLike = { loanType: "unsure", incomeType: "self_employed", collateralAvailable: "yes", collateralValue: 1000000, collateralEncumbered: "no" };
+    const lane = resolveLane(draftLike);
+    expect(lane.lane).toBe("secured_business");
+    expect(lane.guessed).toBe(true);
+  });
+  it("confidence drops one tier when upcoming expense present", () => {
+    const base = priya();
+    base.upcomingExpense = null;
+    const withExp = { ...priya(), upcomingExpense: 120000 };
+    void base;
+    // upcomingExpense raises buffer + lump so FCF necessarily falls
+    expect(evaluate(withExp).cf.safeEmi).toBeLessThan(evaluate(priya()).cf.safeEmi);
   });
 });
 

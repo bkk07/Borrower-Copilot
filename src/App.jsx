@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { blankDraft, draftToProfile, visibleQuestions, isAnswered } from "./data/questions.js";
 import { PRESETS } from "./data/presets.js";
 import { evaluate } from "./rules/verdict.js";
@@ -32,16 +32,38 @@ const OUTPUTS = [
 ];
 
 export default function App() {
-  const [step, setStep] = useState("welcome");
-  const [draft, setDraft] = useState(blankDraft);
-  const [qIndex, setQIndex] = useState(0);
+  const [step, setStep] = useState(() => {
+    try {
+      const s = JSON.parse(localStorage.getItem("bc_step") || "null");
+      return ["welcome", "quiz", "review", "results"].includes(s) ? s : "welcome";
+    } catch { return "welcome"; }
+  });
+  const [draft, setDraft] = useState(() => {
+    try {
+      const raw = localStorage.getItem("bc_draft");
+      if (!raw) return blankDraft;
+      const parsed = JSON.parse(raw);
+      return { ...blankDraft, ...parsed };
+    } catch { return blankDraft; }
+  });
+  const [qIndex, setQIndex] = useState(() => {
+    try {
+      const v = Number(JSON.parse(localStorage.getItem("bc_qIndex") || "0"));
+      return Number.isFinite(v) ? v : 0;
+    } catch { return 0; }
+  });
+
+  // Persist across refresh / accidental close (no backend, no account).
+  useEffect(() => { try { localStorage.setItem("bc_draft", JSON.stringify(draft)); } catch { /* ignore */ } }, [draft]);
+  useEffect(() => { try { localStorage.setItem("bc_step", JSON.stringify(step)); } catch { /* ignore */ } }, [step]);
+  useEffect(() => { try { localStorage.setItem("bc_qIndex", JSON.stringify(qIndex)); } catch { /* ignore */ } }, [qIndex]);
 
   const visible = useMemo(() => visibleQuestions(draft), [draft]);
   const q = visible[Math.min(qIndex, visible.length - 1)];
   const done = visible.filter((qq) => isAnswered(qq, draft)).length;
   const live = useMemo(() => (step === "quiz" || step === "review" ? tryEvaluate(draft) : null), [step, draft]);
 
-  const startFresh = () => { setDraft(blankDraft); setQIndex(0); setStep("quiz"); window.scrollTo(0, 0); };
+  const startFresh = () => { localStorage.removeItem("bc_draft"); localStorage.removeItem("bc_step"); localStorage.removeItem("bc_qIndex"); setDraft(blankDraft); setQIndex(0); setStep("quiz"); window.scrollTo(0, 0); };
   const goHome = () => { setStep("welcome"); window.scrollTo(0, 0); };
   const loadPreset = (name) => { setDraft({ ...blankDraft, ...PRESETS[name] }); setQIndex(0); setStep("review"); window.scrollTo(0, 0); };
 
@@ -201,11 +223,11 @@ export default function App() {
         <Header onHome={goHome} onCta={startFresh} ctaLabel="Restart" />
         <div className="mx-auto grid w-full max-w-5xl gap-6 px-4 py-6 md:grid-cols-[1fr_300px]">
           <div key={q?.id} className="anim-rise">
-            <div className="flex items-center justify-between text-sm text-[#6f6355]">
+            <div role="status" aria-live="polite" className="flex items-center justify-between text-sm text-[#6f6355]">
               <span className="font-semibold">Question {qIndex + 1} of {visible.length}</span>
               <span>{done} answered · {pct}%</span>
             </div>
-            <div className="bc-progress mt-2"><div style={{ width: `${pct}%` }} /></div>
+            <div className="bc-progress mt-2" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label="Progress"><div style={{ width: `${pct}%` }} /></div>
             <div className="bc-card mt-4 p-5 md:p-7">
               {q?.group !== "must" && (
                 <span className="mb-2 inline-block rounded-full bg-[#efe8da] px-3 py-1 text-xs font-bold text-[#6f6355]">
