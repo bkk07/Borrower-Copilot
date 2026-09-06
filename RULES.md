@@ -16,8 +16,8 @@ differently from a salaried engineer's salary — because they really are differ
 |---|---|
 | Documented Income (DI) | Salary, or ITR income ÷ 12 — the part a bank can verify on paper |
 | Blended Income (BI) | DI + undocumented cash × 0.5 discount — used only for the borrower's *own* safe math (and the secured lane, see §4), never for plain bank-sanction math |
-| Free Cash Flow (FCF) | Blended Income − Existing EMI − Expenses − Safety Buffer |
-| Safety Buffer | 10% of income normally; 15% if sole earner or recent bounce |
+| Free Cash Flow (FCF) | Blended Income − Existing EMI − Expenses − Safety Buffer − Upcoming/6 (if any) |
+| Safety Buffer | 10% of income normally; 15% if sole earner, recent bounce, or a large upcoming expense |
 | FOIR | Fixed Obligations to Income Ratio — the share of verifiable income a lender lets go to EMIs |
 | LTV | Loan-to-Value — loan ÷ collateral value; our cap is 50% (LAP norm) |
 | APR (approx) | Nominal rate + one-time fee spread over the loan life (simplified, labelled as approximation) |
@@ -27,7 +27,8 @@ differently from a salaried engineer's salary — because they really are differ
 | What | Value | Why | Source |
 |---|---|---|---|
 | Don't Borrow | FCF ≤ 0 | No real room left each month | My judgement |
-| Don't Borrow (override) | Recent bounce = yes (informal lane) | Already showing debt stress — new debt makes it worse | My judgement |
+| Dont Borrow (override) | Recent bounce = yes (informal lane) | Already showing debt stress — new debt makes it worse | My judgement |
+| Debt-payoff swap check | Loan purpose = debt payoff + existing EMI > 0 → net monthly = needs − old EMI | Shows whether consolidation actually wins vs just adding debt | My judgement |
 | Borrow Less | 0 < FCF but safe EMI < EMI needed for requested amount | Can afford something, not the full ask | My judgement |
 | Borrow | Safe EMI ≥ EMI needed, with margin | Genuinely affordable | My judgement |
 | Max Safe EMI | FCF × 0.8 (keep 20% breathing room) | Deliberate safety margin | My judgement |

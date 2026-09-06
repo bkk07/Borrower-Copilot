@@ -65,7 +65,7 @@ function DualBars({ sanctionRange, safeRange }) {
 }
 
 // Rate band track: full lane band with the fair-range marker positioned on it.
-function RateTrack({ fullBand, fairRange }) {
+function RateTrack({ fullBand, fairRange, aprLabel }) {
   const [lo, hi] = fullBand;
   const span = Math.max(hi - lo, 0.1);
   const left = ((fairRange[0] - lo) / span) * 100;
@@ -74,7 +74,7 @@ function RateTrack({ fullBand, fairRange }) {
     <div>
       <div className="flex items-baseline justify-between">
         <p className="font-display text-3xl font-bold">{fairRange[0]}–{fairRange[1]}<span className="text-xl">%</span></p>
-        <p className="text-sm text-[#6f6355]">real cost ~<b className="text-[#1c1611]">{fairRange[2] ?? ""}</b></p>
+        <p className="text-sm text-[#6f6355]">{aprLabel}</p>
       </div>
       <div className="bc-track mt-3">
         <div className="bc-track-marker" style={{ left: `${left}%`, width: `${Math.max(width, 6)}%` }} />
@@ -110,7 +110,8 @@ export default function ResultsScreen({ result, profile, onRestart, onEdit }) {
 
         <OutputCard kicker="O3 · Fair rate" title="Know the band before they quote" badge={<ConfBadge level={r.confidence.level} />} delay={1}
           why={`${r.explanations.fairRate} Real cost adds the ${r.rate.feePct}% processing fee spread over the loan life (simplified APR — an approximation, see RULES.md).`}>
-          <RateTrack fullBand={r.rate.fullBand} fairRange={[...r.rate.fairRange, `${r.rate.apr}%`]} />
+          <RateTrack fullBand={r.rate.fullBand} fairRange={r.rate.fairRange}
+            aprLabel={<> {r.rate.nominal}% + ~{r.rate.feeDrag}% fee ≈ <b className="text-[#1c1611]">{r.rate.apr}%</b> real cost</>} />
           <p className="mt-3 rounded-xl bg-[#faf5ea] p-3 text-sm">If the lender quotes above <b>{r.rate.fairRange[1]}%</b>, push back — cite your {profile.creditScoreKnown ? `score of ${profile.creditScore}` : "profile"} and this band.</p>
           {r.lenderComparison && <p className="mt-2 rounded-xl bg-[#e2ece4] p-3 text-sm font-medium">{r.lenderComparison.text}</p>}
         </OutputCard>
@@ -134,10 +135,11 @@ export default function ResultsScreen({ result, profile, onRestart, onEdit }) {
 
         <StressTestCard stress={r.stress} confidence={r.confidence} />
 
-        {r.consolidationNote && (
+        {(r.consolidationNote || r.debtPayoffNote) && (
           <div className="bc-card anim-rise-2 border-l-4 !border-l-[#b97f1f] p-5">
             <p className="font-bold">💡 Before any new loan</p>
-            <p className="mt-1 text-[15px] text-[#4a4238]">{r.consolidationNote}</p>
+            {r.debtPayoffNote && <p className="mt-1 text-[15px] text-[#4a4238]">{r.debtPayoffNote}</p>}
+            {r.consolidationNote && <p className="mt-1 text-[15px] text-[#4a4238]">{r.consolidationNote}</p>}
           </div>
         )}
 
@@ -150,7 +152,7 @@ export default function ResultsScreen({ result, profile, onRestart, onEdit }) {
           </ul>
         </div>
 
-        <div className="anim-rise-3"><NegotiationCard text={r.card} /></div>
+        <div className="anim-rise-3"><NegotiationCard result={{ ...r, profile }} /></div>
 
         <div className="no-print flex gap-2 pb-10">
           <button type="button" onClick={onEdit} className="bc-btn-ghost flex-1 !bg-white">← Edit answers</button>

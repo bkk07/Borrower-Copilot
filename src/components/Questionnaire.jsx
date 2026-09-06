@@ -180,6 +180,13 @@ export default function QuestionInput({ q, draft, setDraft }) {
           </div>
         </div>
       );
+    case "upcomingExpense":
+      return (
+        <div className="grid gap-2">
+          <MoneyInput value={draft.upcomingExpense} onChange={(v) => set("upcomingExpense", v)} placeholder="e.g. 60,000" />
+          <p className="text-sm text-[#6f6355]">If you know a big payment is coming, we spread it over 6 months and raise the buffer — this one question can move your safe EMI.</p>
+        </div>
+      );
     default:
       return (
         <input

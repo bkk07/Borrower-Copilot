@@ -17,7 +17,10 @@ export function sanctionCalc(profile, lane, cf) {
   const base = Math.max(0, Math.round(sanctionBaseIncome(profile, lane, cf)));
   const foirCap = def.foirCap;
   const maxLenderEmi = Math.max(0, Math.round(base * foirCap - cf.existingEmi.value));
-  let amount = Math.round(principalForEmi(maxLenderEmi, def.typicalRate, def.sanctionTenureMonths));
+  // Lenders rarely extend past age 60 — cap the sanction tenure the same way
+  // as the safe tenure (judgement, RULES.md §4).
+  const tenureMonths = Math.min(def.sanctionTenureMonths, tenureCapForAge(profile.age, def));
+  let amount = Math.round(principalForEmi(maxLenderEmi, def.typicalRate, tenureMonths));
   let ltvCap = null;
   let cappedByLtv = false;
   if (lane === "secured_business") {
@@ -31,5 +34,13 @@ export function sanctionCalc(profile, lane, cf) {
       }
     }
   }
-  return { base, foirCap, maxLenderEmi, amount, ltvCap, cappedByLtv, typicalRate: def.typicalRate, tenureMonths: def.sanctionTenureMonths };
+  return { base, foirCap, maxLenderEmi, amount, ltvCap, cappedByLtv, typicalRate: def.typicalRate, tenureMonths };
+}
+
+function tenureCapForAge(age, def) {
+  const a = Number(age);
+  if (!Number.isFinite(a)) return def.sanctionTenureMonths;
+  const yearsTo60 = 60 - a;
+  if (yearsTo60 <= 0) return 12;
+  return Math.min(def.sanctionTenureMonths, yearsTo60 * 12);
 }

@@ -144,6 +144,9 @@ details.bc-details p { margin-top: .4rem; color: #4a4238; font-size: .9rem; line
 
 @media print {
   .no-print { display: none !important; }
+  header, .no-print, footer { display: none !important; }
   body { background: #fff; }
   .bc-card { box-shadow: none; break-inside: avoid; }
+  #negotiation-card { box-shadow: none; }
+  #root { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
 }

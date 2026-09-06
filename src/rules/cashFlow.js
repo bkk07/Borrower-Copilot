@@ -90,11 +90,12 @@ export function effectiveEmi(profile, incomeBase) {
 
 export function bufferAmount(profile, incomeBase) {
   const highRisk = profile.soleEarner === true || profile.recentBounce === true;
-  const rate = highRisk ? 0.15 : 0.1;
+  const upcoming = Number(profile.upcomingExpense) > 0;
+  const rate = upcoming || highRisk ? 0.15 : 0.1;
   return {
     value: Math.round(incomeBase * rate),
     rate,
-    label: highRisk ? "15% buffer (sole earner or recent bounce)" : "10% buffer",
+    label: upcoming ? "15% buffer (large upcoming expense in 6 months)" : highRisk ? "15% buffer (sole earner or recent bounce)" : "10% buffer",
   };
 }
 
@@ -104,7 +105,8 @@ export function cashFlow(profile) {
   const expenses = effectiveExpenses(profile, incomeBase);
   const emi = effectiveEmi(profile, incomeBase);
   const buf = bufferAmount(profile, incomeBase);
-  const fcf = Math.round(incomeBase - emi.value - expenses.value - buf.value);
+  const upcomingLump = Math.max(0, Math.round(Number(profile.upcomingExpense ?? 0) / 6)); // spread over 6 months
+  const fcf = Math.round(incomeBase - emi.value - expenses.value - buf.value - upcomingLump);
   const safeEmi = Math.max(0, Math.round(fcf * 0.8)); // keep 20% breathing room
   return {
     documentedIncome: di,
@@ -112,6 +114,7 @@ export function cashFlow(profile) {
     expenses,
     existingEmi: emi,
     buffer: buf,
+    upcomingMonthly: upcomingLump,
     fcf,
     safeEmi,
     stabilityNote: stabilityDiscountLabel(profile),

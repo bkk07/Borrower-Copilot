@@ -29,7 +29,14 @@ export function bandMid(band) {
 // Simplified APR: spread a one-time fee over the loan life (approximation,
 // labelled as such in the UI + RULES.md §7).
 export function aprEstimate(nominalRate, feePct, tenureMonths) {
+  return aprBreakdown(nominalRate, feePct, tenureMonths).apr;
+}
+
+// Same maths, but exposes the fee-drag split so the UI can show
+// "11.6% + ~3.0% fee drag ≈ 14.6%" instead of a bare alarming number.
+export function aprBreakdown(nominalRate, feePct, tenureMonths) {
   const years = tenureMonths / 12;
-  if (!years || years <= 0) return nominalRate;
-  return Math.round((nominalRate + ((feePct || 0) * 12) / years) * 10) / 10;
+  const feeDrag = !years || years <= 0 ? 0 : Math.round((((feePct || 0) * 12) / years) * 10) / 10;
+  const apr = Math.round((nominalRate + feeDrag) * 10) / 10;
+  return { apr, nominal: Math.round(nominalRate * 10) / 10, feeDrag, feePct: feePct || 0 };
 }

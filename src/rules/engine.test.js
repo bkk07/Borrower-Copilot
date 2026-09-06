@@ -85,6 +85,29 @@ describe("rate", () => {
   it("spreads fees into APR (1% over 4y ≈ +3pp)", () => {
     expect(aprEstimate(11.6, 1, 48)).toBeCloseTo(14.6, 1);
   });
+
+  it("tenure grids are lane-aware (secured longest)", () => {
+    expect(evaluate(priya()).tenureTable.at(-1).months).toBe(60);
+    expect(evaluate(ravi()).tenureTable.at(-1).months).toBe(120);
+    expect(evaluate(anita()).tenureTable.at(-1).months).toBe(48);
+  });
+
+  it("APR breakdown exposes nominal + feeDrag", () => {
+    const r = evaluate(priya());
+    expect(r.rate.feeDrag).toBeCloseTo(3, 1);
+    expect(r.rate.nominal).toBeLessThan(r.rate.apr);
+  });
+
+  it("upcoming expense reduces FCF / safe EMI", () => {
+    const p = priya();
+    p.upcomingExpense = 120000;
+    expect(evaluate(p).cf.safeEmi).toBeLessThan(36000);
+  });
+
+  it("debt-payoff purpose emits a consolidation-comparison note", () => {
+    const p = { ...priya(), loanPurpose: "debt_payoff", existingEmi: 14000 };
+    expect(evaluate(p).debtPayoffNote).toMatch(/Borrow/i);
+  });
 });
 
 describe("confidence", () => {

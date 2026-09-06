@@ -31,6 +31,7 @@ export const LANE_DEFAULTS = {
     sanctionTenureMonths: 60,
     safeTenureMonths: 48,
     maxTenureMonths: 60,
+    tenureGrid: [24, 36, 48, 60], // shown in the O4 trade-off table
     processingFeePct: 1,
   },
   secured_business: {
@@ -40,6 +41,7 @@ export const LANE_DEFAULTS = {
     sanctionTenureMonths: 84,
     safeTenureMonths: 84,
     maxTenureMonths: 120,
+    tenureGrid: [36, 60, 84, 120], // longer tenures are normal against property
     processingFeePct: 1,
     ltvCap: 0.5, // sanction <= 50% of collateral value
   },
@@ -50,6 +52,7 @@ export const LANE_DEFAULTS = {
     sanctionTenureMonths: 36,
     safeTenureMonths: 36,
     maxTenureMonths: 60,
+    tenureGrid: [12, 24, 36, 48], // short horizons for uncertain income
     processingFeePct: 2,
   },
 };

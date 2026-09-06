@@ -3,7 +3,7 @@ import { LANE_DEFAULTS } from "../data/rateBands.js";
 import { resolveLane } from "../data/questions.js";
 import { cashFlow } from "./cashFlow.js";
 import { sanctionCalc } from "./sanction.js";
-import { rateBand, narrowedBand, bandMid, aprEstimate } from "./rate.js";
+import { rateBand, narrowedBand, bandMid, aprBreakdown } from "./rate.js";
 import { confidenceScore, widenAmount, widenEmi } from "./confidence.js";
 import { stressTest } from "./stressTest.js";
 import { emiForPrincipal, principalForEmi, totalInterest } from "./finance.js";
@@ -43,12 +43,13 @@ export function evaluate(profile) {
   // ---- O1 verdict ----
   const verdict = decideVerdict(profile, cf, emiNeeded);
 
-  // ---- APR / all-in cost ----
+  // ---- APR / all-in cost (split so the UI can show fee drag) ----
   const feePct = profile.existingLenderOffer?.fee ?? def.processingFeePct;
-  const apr = aprEstimate(fairMid, feePct, safeTenure);
+  const aprParts = aprBreakdown(fairMid, feePct, safeTenure);
+  const apr = aprParts.apr;
 
-  // ---- Tenure trade-off at SAFE amount ----
-  const tenures = [24, 36, 48, 60].filter((m) => m <= def.maxTenureMonths);
+  // ---- Tenure trade-off at SAFE amount (lane-aware grid) ----
+  const tenures = (def.tenureGrid ?? [24, 36, 48, 60]).filter((m) => m <= def.maxTenureMonths);
   const tenureTable = tenures.map((m) => {
     const emi = Math.round(emiForPrincipal(safeCenter, fairMid, m));
     return { months: m, years: m / 12, emi, totalInterest: totalInterest(safeCenter, emi, m) };
@@ -90,13 +91,24 @@ export function evaluate(profile) {
       "You already carry expensive debt. Clearing or consolidating the old high-rate loans first would free more cash each month than any new loan can — consider that before borrowing more.";
   }
 
+  // ---- Debt-payoff purpose: compare old burden vs new EMI ----
+  // Someone borrowing to kill existing debt should see whether the swap wins.
+  let debtPayoffNote = null;
+  if (profile.loanPurpose === "debt_payoff" && emiVal > 0) {
+    const net = emiNeeded - emiVal;
+    debtPayoffNote =
+      net < 0
+        ? `Swapping your current ${fmt(emiVal)}/month for this loan's ~${fmt(emiNeeded)}/month would save about ${fmt(-net)} every month — consolidation can work here, but only if you close the old loans, not add to them.`
+        : `This loan would cost ~${fmt(emiNeeded)}/month versus the ${fmt(emiVal)}/month you pay now — that's ${fmt(net)} more each month, so it only makes sense if it wipes out a much higher-rate balance. Don't borrow to add debt on top of debt.`;
+  }
+
   return {
     lane,
     laneLabel: def.label,
     routing,
     cf,
     sanction: { ...san, range: sanctionRange },
-    rate: { fullBand: rb.band, bucket: rb.bucket, fairRange, fairMid: Math.round(fairMid * 10) / 10, apr, feePct },
+    rate: { fullBand: rb.band, bucket: rb.bucket, fairRange, fairMid: Math.round(fairMid * 10) / 10, apr, feeDrag: aprParts.feeDrag, nominal: aprParts.nominal, feePct },
     confidence: conf,
     safe: { center: safeCenter, range: safeRange, tenureMonths: safeTenure },
     emiNeeded,
@@ -107,6 +119,7 @@ export function evaluate(profile) {
     stress,
     lenderComparison,
     consolidationNote,
+    debtPayoffNote,
     explanations: buildExplanations(profile, cf, san, fairRange, rb.bucket, conf, verdict, emiNeeded, safeCenter),
     card: buildCard(profile, lane, def, san, sanctionRange, safeRange, fairRange, apr, cf, conf, verdict, lenderComparison),
   };

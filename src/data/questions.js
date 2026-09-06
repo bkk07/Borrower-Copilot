@@ -59,6 +59,7 @@ export const QUESTIONS = [
   { id: "savingsBufferMonths", group: "must", text: "How many months of expenses do you have saved as backup?", kind: "choice", options: [{ value: "0", label: "None (0)" }, { value: "<1", label: "Less than 1 month" }, { value: "1-3", label: "1–3 months" }, { value: "3-6", label: "3–6 months" }, { value: "6+", label: "6+ months" }, { value: "unknown", label: "Not sure" }], required: true, affects: "O1, stress test, confidence" },
 
   // --- optional for anyone ---
+  { id: "upcomingExpense", group: "optional", text: "Any large expense coming in the next 6 months? (₹ — school fees, medical, etc.)", kind: "amount_optional", required: false, affects: "Raises safety buffer (moves FCF / safe EMI)" },
   { id: "existingLenderOfferRate", group: "optional", text: "Has a lender offered you a rate? What %? (optional)", kind: "number_optional", required: false, affects: "Lender-offer comparison line only" },
   { id: "existingLenderOfferFee", group: "optional", text: "Processing fee they quoted? (% — optional)", kind: "number_optional", required: false, affects: "APR comparison only" },
   { id: "existingLenderOfferTenure", group: "optional", text: "Tenure they offered? (months — optional)", kind: "number_optional", required: false, affects: "APR comparison only" },
@@ -87,7 +88,7 @@ export function isAnswered(q, draft) {
   if (q.id === "existingEmi") return draft.existingEmi !== "" || draft.existingEmiUnknown;
   if (q.id === "householdExpenses") return draft.householdExpenses !== "" || draft.expensesUnknown;
   if (q.id === "cashIncomeRange") return draft.cashMin !== "" || draft.cashMax !== "";
-  if (["existingLenderOfferRate", "existingLenderOfferFee", "existingLenderOfferTenure", "employmentYears", "variableIncomePct", "businessYears", "itrAnnualIncome", "existingLoanCount", "creditScore"].includes(q.id)) return true; // optional
+  if (["existingLenderOfferRate", "existingLenderOfferFee", "existingLenderOfferTenure", "upcomingExpense", "employmentYears", "variableIncomePct", "businessYears", "itrAnnualIncome", "existingLoanCount", "creditScore"].includes(q.id)) return true; // optional
   if (q.group === "optional") return true;
   return v !== "" && v != null;
 }
@@ -161,6 +162,7 @@ export const blankDraft = {
   existingLenderOfferRate: "",
   existingLenderOfferFee: "",
   existingLenderOfferTenure: "",
+  upcomingExpense: "",
 };
 
 // Convert flat form draft -> borrowerProfile (Final Spec §6).
@@ -194,6 +196,7 @@ export function draftToProfile(d) {
   return {
     loanPurpose: d.loanPurpose || "other",
     requestedAmount: num(d.requestedAmount) ?? 0,
+    upcomingExpense: num(d.upcomingExpense),
     loanType:
       d.loanType === "business_secured"
         ? "business_secured"
