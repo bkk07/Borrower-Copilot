@@ -189,16 +189,17 @@ function PlainNumber({ qId, value }) {
 
 function StepperPicker({ qId, value, onChange, chips, label }) {
   const spec = LIMITS[qId] ?? LIMITS.default;
+  const step = qId === "creditScore" ? 10 : qId === "variableIncomePct" ? 5 : 1;
   const n = Number(String(value ?? "").replace(/,/g, ""));
   const cur = Number.isFinite(n) ? n : null;
   const dec = () => {
     if (cur == null) { onChange(String(spec.min ?? 0)); return; }
-    const next = Math.max(spec.min ?? 0, cur - 1);
+    const next = Math.max(spec.min ?? 0, cur - step);
     onChange(String(next));
   };
   const inc = () => {
     if (cur == null) { onChange(String(spec.min ?? 0)); return; }
-    const next = Math.min(spec.max ?? 100, cur + 1);
+    const next = Math.min(spec.max ?? 100, cur + step);
     onChange(String(next));
   };
   return (
@@ -278,7 +279,7 @@ export default function QuestionInput({ q, draft, setDraft }) {
     case "creditScore":
       return (
         <div className="grid gap-3">
-          <MoneyInput value={draft.creditScore} onChange={(v) => set("creditScore", v)} placeholder="780" qId="creditScore" />
+          <StepperPicker qId="creditScore" value={draft.creditScore} onChange={(v) => set("creditScore", v)} label="credit score" chips={[550, 650, 700, 750, 780, 800, 850]} />
           <p className="text-sm text-[#6f6355]">300–900. "Don't know" stays <b>unknown</b> — never treated as a bad score.</p>
         </div>
       );
