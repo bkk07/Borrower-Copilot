@@ -14,7 +14,7 @@
 
 ## Table of Contents
 - [Why This Exists](#why-this-exists)
-- [Key Features](#key-features)
+- [What Makes It Different](#what-makes-it-different)
 - [Live Demo — Try the Three Borrowers](#live-demo--try-the-three-borrowers)
 - [Quick Start](#quick-start)
 - [How It Works](#how-it-works)
@@ -40,21 +40,13 @@ A sanction letter tells you the maximum a bank *can* give. It doesn't tell you w
 
 ---
 
-## Key Features
+## What Makes It Different
 
-**For Borrowers:**
-- **Adaptive Questionnaire — 12 questions on average.** 9 core + 2–5 branch extras. Salaried sees salary history; a shop owner sees ITR + cash + collateral; a gig worker sees stability + bounce + sole-earner. Everyone sees only their path.
-- **9 Real-World Purposes.** *Essential expense · Planned personal / family expense · Home improvement · Major purchase · Start or grow my income · Pay off existing debt · Education or career · Income-generating asset · Something else* — built for thousands of borrowers, not 3 personas.
-- **Two Numbers, Clearly Separated.** `Possible lender sanction` (what a bank *might* approve via FOIR) vs `Safer borrowing range` (what cash flow says is comfortable). Headlines rounded for readability, exact numbers one click away.
-- **Waterfall + Relief View.** Income → Expenses → EMIs → Buffer → FCF → Safe EMI shown as a stacked bar, plus a 12-dot relief strip when a short EMI frees headroom in 6–12 months.
-- **Stress Lab — Drag the Future.** Income `0→−30%` and Rate `+0→+3pp` sliders live-recompute `Pass / Tight / Fail` using the same engine you see in results.
-
-**For Negotiation:**
-- **One-Page Negotiation Card.** `Requested · Possible vs Safer range · Fair rate · Approx. all-in cost · Requested vs Max EMI · Why · Confidence` plus the line *“Could you offer ≤12.3% at ~1% fee? My fair range is 10.8–12.3%.”* and the rehearsal *“If they say 14%, reply: My max comfortable EMI is ₹26k/mo.”* — **Copy** + **Save as Image** (canvas, no library) + **Print** + **Shareable link** (`#s=...` hash, no backend).
-
-**For Honesty:**
-- **Multiple EMIs with Tenures.** Total EMI *and* per-loan horizon (`Within 6 months → >2 years`). `₹3k/1yr + ₹10k/2yr + ₹20k` shows `₹13k` relief — *display-only* headroom, verdict stays on today’s cash flow.
-- **Live Estimate.** Desktop sidebar + mobile strip update verdict preview as you answer.
+- **Adaptive Questionnaire — 12 questions on average.** 9 core + 2–5 branch extras. Salaried, shop owner, and gig worker each see only their path.
+- **Two Numbers, Honestly Separated.** `Possible lender sanction` (what a bank *might* approve) vs `Safer borrowing range` (what cash flow says is comfortable) — plus a Waterfall bar and a 12-dot relief strip when a short EMI frees headroom.
+- **Stress Lab — Drag the Future.** Income `0→−30%` and Rate `+0→+3pp` sliders live-recompute `Pass / Tight / Fail` on the same engine.
+- **One-Page Negotiation Card.** `Requested · Possible vs Safer · Fair rate · Approx. all-in · EMIs · Why` plus *“Could you offer ≤12.3% at ~1% fee?”* and *“If they say 14%, reply: My max is ₹26k/mo.”* — **Copy / Save as Image / Print / Share link** (`#s=...` hash, no backend).
+- **9 Real-World Purposes & Honest Unknowns.** Built for thousands of borrowers, not 3 personas. `I don't know` widens the range and lowers confidence — never a silent `0`; live estimate updates as you answer.
 
 ---
 

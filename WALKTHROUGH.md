@@ -57,15 +57,10 @@ Quick presets: Home → **Run Priya's / Ravi's / Anita's case →** jumps straig
 **Built & verified (44 tests `npm test`, lane-aware grids, age cap to 60, horizon + 3-EMI breakdown, waterfall, stress lab, image card, hash-share):**
 - Rounded headlines + `Show exact numbers` + Waterfall + 12-dot strip
 - What-if amount slider + Interactive Stress Lab (sliders)
-- Multiple EMIs with tenure + after-relief headroom + confidence penalty
-- Aria-describedby for Q1 helper, toast, sticky O4
 
-**Build next (if time, still no backend/ML):**
-- Saved scenarios compare view (side-by-side cards) — data already in `localStorage bc_saved`
-- Hindi/Kannada label pack (10-min add-on) — already noted as CUT but now trivial
-- PWA offline install
+**Build next:** Saved scenario compare view — data already in `localStorage bc_saved`.
 
-**Intentionally cut — per spec CUT list:** Login/accounts, backend/DB, ML credit scoring, bureau pull, home-loan multi-decade math, negotiation chatbot, PDF library, loan-ROI calculator. All would add complexity without improving the core decision.
+**Intentionally cut — per spec CUT list:** Login/accounts, backend/DB, ML credit scoring, bureau pull, home-loan multi-decade math, negotiation chatbot, PDF library, loan-ROI calculator.
 
 **Live-change defense:** Every threshold they can ask to change live is a pure function in `RULES.md` + `src/rules/` — e.g. FOIR caps `src/data/rateBands.js:25`, buffers `src/rules/cashFlow.js:91`, horizon mapping `src/rules/cashFlow.js:80`, widening `src/rules/confidence.js:52`. Change a number → `npm test` stays green in <1s.
 

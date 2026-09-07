@@ -190,7 +190,7 @@ Confidence drives all ranges: Amounts `±8% / 15% / 25%` `confidence.js:52` + Ra
 Borrowers often have `₹3k/1yr + ₹10k/2yr + ₹20k/5yr = ₹33k` today. Tenure matters because a `₹3k` loan frees headroom in 12 months.
 
 - **Question:** After you enter total EMI, the app asks: `When does your largest EMI finish? [Within 6m / 6–12m / 1–2y / >2y / Not sure]` → optional `How many separate EMIs? [1/2/3+]` → if `2/3+`, per-EMI amount + months-left.
-- **Engine:** `cashFlow.js` computes `expiringRelief = sum(short EMIs <12m)`. Your verdict and `FCF` still use *today's* total — no optimism. A second set `fcfAfterRelief / safeEmiAfterRelief` and `After relief: Once ₹10k ends 6–12m (₹13k/mo) ends, headroom → ~₹X safe` is display-only. A 12-dot strip `ResultsScreen` shows `●●● ₹33k now → ○○○ ₹20k after 6m`.
+  - **Engine:** `cashFlow.js` computes `expiringRelief = sum(short EMIs <12m)`. Verdict and `FCF` still use *today's* total — no optimism. Display-only relief with dot strip.
 - **If you skip tenure:** Horizon defaults to `unknown` → no relief assumed + `+0.5` confidence penalty — same conservative path as before.
 
 ---
