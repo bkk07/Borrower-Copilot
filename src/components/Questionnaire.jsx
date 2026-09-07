@@ -154,7 +154,7 @@ function CheckRow({ checked, onChange, children }) {
   );
 }
 
-function PlainNumber({ qId, value, onChange }) {
+function PlainNumber({ qId, value }) {
   const msg = clampMsg(qId, value);
   const hint = (() => {
     if (!value) return null;
@@ -171,17 +171,49 @@ function PlainNumber({ qId, value, onChange }) {
       <div className="relative">
         <input
           type="number"
-          inputMode="numeric"
-          min="0"
+          inputMode="none"
+          readOnly
+          tabIndex={-1}
           value={value ?? ""}
-          placeholder="Optional — leave blank to skip"
-          onChange={(e) => onChange(clampNum(qId, e.target.value))}
-          className="bc-input !pr-24"
+          placeholder="Tap a value below"
+          className="bc-input !pr-24 cursor-pointer bg-[#faf5ea]"
           aria-invalid={msg ? "true" : "false"}
+          onFocus={(e) => e.target.blur()}
         />
         {hint ? <span className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 text-sm font-semibold text-[#6f6355] sm:block">{hint}</span> : null}
       </div>
       {msg ? <p className="mt-1 text-xs font-medium text-[#a4261f]">{msg}</p> : null}
+    </div>
+  );
+}
+
+function StepperPicker({ qId, value, onChange, chips, label }) {
+  const spec = LIMITS[qId] ?? LIMITS.default;
+  const n = Number(String(value ?? "").replace(/,/g, ""));
+  const cur = Number.isFinite(n) ? n : null;
+  const dec = () => {
+    if (cur == null) { onChange(String(spec.min ?? 0)); return; }
+    const next = Math.max(spec.min ?? 0, cur - 1);
+    onChange(String(next));
+  };
+  const inc = () => {
+    if (cur == null) { onChange(String(spec.min ?? 0)); return; }
+    const next = Math.min(spec.max ?? 100, cur + 1);
+    onChange(String(next));
+  };
+  return (
+    <div className="grid gap-2.5">
+      <div className="flex items-center gap-2">
+        <button type="button" onClick={dec} aria-label={`Decrease ${label}`} className="h-11 w-11 shrink-0 rounded-xl border border-[#e3d9c6] bg-white text-xl font-bold hover:border-[#0b3b2c]">−</button>
+        <div className="bc-input flex-1 !pr-4 text-center font-bold pointer-events-none select-none" aria-live="polite">{cur == null ? "—" : cur}{qId === "variableIncomePct" ? "%" : ""}</div>
+        <button type="button" onClick={inc} aria-label={`Increase ${label}`} className="h-11 w-11 shrink-0 rounded-xl border border-[#e3d9c6] bg-white text-xl font-bold hover:border-[#0b3b2c]">+</button>
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        {chips.map((c) => (
+          <button key={c} type="button" onClick={() => onChange(String(c))} className={`rounded-full border px-3 py-1 text-xs font-semibold ${String(cur) === String(c) ? "border-[#0b3b2c] bg-[#0b3b2c] text-white" : "border-[#e3d9c6] bg-white hover:border-[#0b3b2c]"}`}>{c}{qId === "age" ? " yrs" : qId === "variableIncomePct" ? "%" : ""}</button>
+        ))}
+        <button type="button" onClick={() => onChange("")} className="rounded-full border border-dashed border-[#c9b995] bg-[#faf5ea] px-3 py-1 text-xs font-semibold">Clear</button>
+      </div>
     </div>
   );
 }
@@ -278,17 +310,17 @@ export default function QuestionInput({ q, draft, setDraft }) {
         </div>
       );
     case "age":
-      return <PlainNumber qId="age" value={draft.age} onChange={(v) => set("age", v)} />;
+      return <StepperPicker qId="age" value={draft.age} onChange={(v) => set("age", v)} label="age" chips={[22, 26, 29, 35, 42, 50, 58]} />;
     case "employmentYears":
-      return <PlainNumber qId="employmentYears" value={draft.employmentYears} onChange={(v) => set("employmentYears", v)} />;
+      return <StepperPicker qId="employmentYears" value={draft.employmentYears} onChange={(v) => set("employmentYears", v)} label="years worked" chips={[0, 1, 3, 5, 10, 15]} />;
     case "businessYears":
-      return <PlainNumber qId="businessYears" value={draft.businessYears} onChange={(v) => set("businessYears", v)} />;
+      return <StepperPicker qId="businessYears" value={draft.businessYears} onChange={(v) => set("businessYears", v)} label="business years" chips={[1, 3, 5, 10, 14, 20]} />;
     case "itrAnnualIncome":
-      return <PlainNumber qId="itrAnnualIncome" value={draft.itrAnnualIncome} onChange={(v) => set("itrAnnualIncome", v)} />;
+      return <MoneyInput value={draft.itrAnnualIncome} onChange={(v) => set("itrAnnualIncome", v)} placeholder="e.g. 4,20,000 / yr" qId="itrAnnualIncome" />;
     case "variableIncomePct":
-      return <PlainNumber qId="variableIncomePct" value={draft.variableIncomePct} onChange={(v) => set("variableIncomePct", v)} />;
+      return <StepperPicker qId="variableIncomePct" value={draft.variableIncomePct} onChange={(v) => set("variableIncomePct", v)} label="variable %" chips={[0, 10, 20, 30, 50]} />;
     case "existingLoanCount":
-      return <PlainNumber qId="existingLoanCount" value={draft.existingLoanCount} onChange={(v) => set("existingLoanCount", v)} />;
+      return <StepperPicker qId="existingLoanCount" value={draft.existingLoanCount} onChange={(v) => set("existingLoanCount", v)} label="loan count" chips={[0, 1, 2, 3, 5]} />;
     case "existingLenderOfferRate":
       return <PlainNumber qId="default" value={draft.existingLenderOfferRate} onChange={(v) => set("existingLenderOfferRate", v)} />;
     case "existingLenderOfferFee":
