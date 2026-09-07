@@ -6,7 +6,7 @@ import { formatINR, fmtLakh } from "./rules/finance.js";
 import QuestionInput from "./components/Questionnaire.jsx";
 import ReviewAnswers from "./components/ReviewAnswers.jsx";
 import ResultsScreen from "./components/ResultsScreen.jsx";
-import { Header, Footer, Logo } from "./components/ui.jsx";
+import { Header, Logo } from "./components/ui.jsx";
 
 function tryEvaluate(draft) {
   try {
@@ -19,9 +19,9 @@ function tryEvaluate(draft) {
 }
 
 const PERSONAS = [
-  { key: "priya", name: "Priya, 29", place: "Bengaluru · salaried", line: "₹1.1L/month, car EMI ₹14k, score 780. Wants ₹8L for a wedding.", expect: "✅ Borrow — with room to spare" },
-  { key: "ravi", name: "Ravi, 42", place: "Mysuru · kirana owner", line: "ITR ₹4.2L/yr + cash, owns ₹45L shop. Wants ₹15L for stock + vehicle.", expect: "⚠️ Borrow Less — via the secured lane" },
-  { key: "anita", name: "Anita, 35", place: "Hubballi · gig + tailoring", line: "₹26–30k/month, 3 app loans, a bounce last month. Wants ₹1.5L e-scooter.", expect: "🛑 Don't Borrow — fix old debt first" },
+  { key: "priya", name: "Priya, 29", place: "Bengaluru · salaried", line: "₹1.1L/month, car EMI ₹14k, score 780. Wants ₹8L for a wedding.", expect: "Borrow — with room to spare" },
+  { key: "ravi", name: "Ravi, 42", place: "Mysuru · kirana owner", line: "ITR ₹4.2L/yr + cash, owns ₹45L shop. Wants ₹15L for stock + vehicle.", expect: "Borrow Less — via the secured lane" },
+  { key: "anita", name: "Anita, 35", place: "Hubballi · gig + tailoring", line: "₹26–30k/month, 3 app loans, a bounce last month. Wants ₹1.5L e-scooter.", expect: "Don't Borrow — fix old debt first" },
 ];
 
 const OUTPUTS = [
@@ -195,7 +195,7 @@ export default function App() {
                   <p className="font-display text-xl font-semibold text-white">{p.name}</p>
                   <p className="text-xs font-semibold uppercase tracking-widest text-emerald-200/70">{p.place}</p>
                   <p className="mt-2 text-sm leading-relaxed text-emerald-50/90">{p.line}</p>
-                  <p className="mt-3 rounded-xl bg-black/25 p-2.5 text-sm font-semibold text-amber-200">{p.expect}</p>
+                  <p className={`mt-3 rounded-xl p-2.5 text-sm font-semibold ${p.key === "priya" ? "bg-emerald-900 text-emerald-100 ring-1 ring-emerald-700" : p.key === "ravi" ? "bg-amber-900 text-amber-100 ring-1 ring-amber-700" : "bg-red-900 text-red-100 ring-1 ring-red-700"}`}>{p.expect}</p>
                   <button type="button" onClick={() => loadPreset(p.key)} className="mt-3 w-full cursor-pointer rounded-xl bg-white py-2.5 text-sm font-bold text-[#0b3b2c] hover:bg-emerald-50">
                     Run {p.name.split(",")[0]}'s case →
                   </button>
@@ -211,7 +211,6 @@ export default function App() {
           <p className="mt-2 text-[#4a4238]">The best-informed person in the room should be you.</p>
           <button type="button" onClick={startFresh} className="bc-btn-primary mx-auto mt-5 !w-auto px-10">Check my loan →</button>
         </section>
-        <Footer />
       </div>
     );
   }
@@ -315,7 +314,6 @@ export default function App() {
           onEdit={(qid) => { const i = visible.findIndex((qq) => qq.id === qid); setQIndex(Math.max(0, i)); setStep("quiz"); window.scrollTo(0, 0); }}
           onSubmit={() => { setStep("results"); window.scrollTo(0, 0); }}
         />
-        <Footer />
       </div>
     );
   }
@@ -338,7 +336,6 @@ export default function App() {
         onRestart={() => { setDraft(blankDraft); setQIndex(0); setStep("welcome"); window.scrollTo(0, 0); }}
         onEdit={() => { setStep("review"); window.scrollTo(0, 0); }}
       />
-      <Footer />
     </div>
   );
 }
