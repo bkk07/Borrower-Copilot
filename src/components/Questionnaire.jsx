@@ -4,7 +4,7 @@ import { setField } from "../data/questions.js";
 // One-line helper text per option — only where it earns its place.
 // Q1 (loan purpose) intentionally has no per-option sub-text per UX spec.
 const OPTION_SUB = {
-  personal: "No collateral · FOIR-based · 1–5 yrs",
+  personal: "No collateral · 1–5 yrs",
   business_secured: "Against property · LAP-style · longer tenure",
   informal_small_ticket: "Small ticket / informal · conservative limits",
   unsure: "We'll guess your lane from income — flagged as a guess",

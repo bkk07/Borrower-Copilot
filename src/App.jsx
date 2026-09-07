@@ -139,7 +139,7 @@ export default function App() {
             <div className="bc-card anim-rise border-l-4 !border-l-[#a4261f] p-5">
               <p className="bc-eyebrow !text-[#a4261f]">The bank's number</p>
               <p className="font-display mt-1 text-2xl font-semibold">"You're approved for ₹17.9L at 14%."</p>
-              <p className="mt-2 text-[15px] text-[#4a4238]">Sanction letters maximise what the <em>bank</em> can collect — FOIR maths, no view of your comfort.</p>
+              <p className="mt-2 text-[15px] text-[#4a4238]">Sanction letters maximise what the <em>bank</em> can collect — no view of your comfort.</p>
             </div>
             <div className="bc-card anim-rise-1 border-l-4 !border-l-[#0b3b2c] p-5">
               <p className="bc-eyebrow !text-[#0b3b2c]">Your number</p>
@@ -207,7 +207,7 @@ export default function App() {
 
         {/* CTA */}
         <section className="mx-auto w-full max-w-2xl px-4 py-14 text-center">
-          <h2 className="font-display text-3xl font-semibold md:text-4xl">Walk into the bank knowing your numbers.</h2>
+          <h2 className="font-display text-3xl font-semibold md:text-4xl">Know your numbers before you visit.</h2>
           <p className="mt-2 text-[#4a4238]">The best-informed person in the room should be you.</p>
           <button type="button" onClick={startFresh} className="bc-btn-primary mx-auto mt-5 !w-auto px-10">Check my loan →</button>
         </section>
@@ -260,7 +260,7 @@ export default function App() {
             <div className="sticky top-20 grid gap-3">
               <div className="bc-card p-4">
                 <p className="bc-eyebrow">Why we ask</p>
-                  <p className="mt-1 text-sm leading-relaxed text-[#4a4238]">{q?.affects ?? "Every question moves at least one number — nothing here is small talk."}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-[#4a4238]">This helps us estimate what's comfortable for you. Every question changes your result in a small but meaningful way.</p>
               </div>
               <div className="rounded-2xl bg-[#0b3b2c] p-4 text-white">
                 <p className="text-xs font-bold uppercase tracking-widest text-emerald-200/70">Live estimate</p>
@@ -275,7 +275,7 @@ export default function App() {
                 )}
               </div>
               <div className="bc-card p-4 text-sm text-[#4a4238]">
-                <b className="text-[#1c1611]">Honesty engine:</b> "don't know" widens your ranges and lowers confidence — it never becomes a silent zero.
+                Not sure? We widen the range. An answer like "I don't know" never counts as zero.
               </div>
             </div>
           </aside>
