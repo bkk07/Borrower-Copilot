@@ -12,7 +12,7 @@ export default function NegotiationCard({ result, text }) {
   void feeHint;
   const negotiationLine =
     r && r.rate?.fairRange
-      ? `Ask whether the lender can offer ≤${r.rate.fairRange[1]}% with ${r.rate.feePct ? `~${r.rate.feePct}%` : "per lender"} processing fee.`
+      ? `Could you offer ≤${r.rate.fairRange[1]}% at ~${r.rate.feePct ?? 1}% fee? My fair range is ${r.rate.fairRange[0]}–${r.rate.fairRange[1]}%.`
       : null;
   const rows = hasResult ? [
     ["Requested", fmtRangeLakh([r.profile?.requestedAmount, r.profile?.requestedAmount])],

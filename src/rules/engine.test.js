@@ -277,6 +277,13 @@ describe("purpose taxonomy — 9 real categories", () => {
       expect(["borrow", "less", "dont"]).toContain(r.verdict.key);
     }
   });
+  it("purpose does not move safe EMI at same income", () => {
+    const base = priya();
+    const a = evaluate({ ...base, loanPurpose: "income_growth" });
+    const b = evaluate({ ...base, loanPurpose: "planned_personal" });
+    expect(a.cf.safeEmi).toBe(b.cf.safeEmi);
+    expect(a.safe.center).toBe(b.safe.center);
+  });
   it("wizard has ~9 must questions, not 30", () => {
     const mustCount = visibleQuestions(blankDraft).filter((q) => q.group === "must").length;
     expect(mustCount).toBeGreaterThanOrEqual(8);

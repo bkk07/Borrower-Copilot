@@ -49,18 +49,9 @@ function VerdictHero({ result, profile }) {
             A lender may still offer a loan, but that does not mean the loan is affordable for you. Your free cash flow is already around {fmtLakhRounded(r.cf.fcf)}/month.
           </p>
         ) : null}
-        <div className="mt-4 grid grid-cols-3 gap-2">
-          {[
-            ["Asked for", fmtLakhRounded(profile.requestedAmount)],
-            [r.verdict.key === "dont" ? "Would need /mo" : "Needs /mo", `${formatINR(r.emiNeeded)}`],
-            ["Maximum safe EMI", `${formatINR(r.emiCeiling)}/mo`],
-          ].map(([l, v]) => (
-            <div key={l} className="rounded-xl bg-black/25 p-3 text-center">
-              <p className="text-[11px] uppercase tracking-widest text-white/60">{l}</p>
-              <p className="font-display text-lg font-bold md:text-xl">{v}</p>
-            </div>
-          ))}
-        </div>
+        <p className="mt-4 text-sm text-white/80">
+          Requested {fmtLakhRounded(profile.requestedAmount)} · needs ~{formatINR(r.emiNeeded)}/mo — see the detailed EMI comparison below.
+        </p>
       </div>
     </section>
   );
