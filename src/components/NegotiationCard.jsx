@@ -43,6 +43,45 @@ export default function NegotiationCard({ result, text }) {
     } catch { /* user cancelled — fall through to copy */ }
     return doCopy();
   };
+  const saveImage = () => {
+    const w = 900, h = 520, pad = 32;
+    const c = document.createElement("canvas");
+    c.width = w; c.height = h;
+    const ctx = c.getContext("2d");
+    if (!ctx) return;
+    // background
+    ctx.fillStyle = "#0b3b2c"; ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = "rgba(255,255,255,0.08)"; ctx.beginPath(); ctx.roundRect(pad, pad, w - pad * 2, h - pad * 2, 18); ctx.fill();
+    // accent line
+    const grad = ctx.createLinearGradient(pad, 0, w - pad, 0);
+    grad.addColorStop(0, "#b97f1f"); grad.addColorStop(1, "rgba(185,127,31,0)");
+    ctx.fillStyle = grad; ctx.fillRect(pad + 16, pad + 54, w - pad * 2 - 32, 3);
+    // title
+    ctx.fillStyle = "white"; ctx.font = "700 22px Inter, sans-serif"; ctx.fillText("BORROWER NEGOTIATION CARD", pad + 16, pad + 36);
+    ctx.fillStyle = "rgba(255,255,255,0.7)"; ctx.font = "600 10px Inter, sans-serif"; ctx.fillText("Take to bank  •  Borrower Copilot", pad + 16, pad + 48);
+    // rows
+    const rows = hasResult ? [
+      ["Requested", fmtRangeLakh([r.profile?.requestedAmount, r.profile?.requestedAmount])],
+      ["Possible lender range", fmtRangeLakh(r.sanction.range)],
+      ["Safer borrowing range", fmtRangeLakh(r.safe.range)],
+      ["Fair rate", `${r.rate.fairRange[0]}–${r.rate.fairRange[1]}%`],
+      ["Approx. all-in", `~${r.rate.apr}%`],
+      ["Requested EMI", `~${formatINR(r.emiNeeded)}/mo`],
+      ["Max comfortable EMI", `~${formatINR(r.cf.safeEmi)}/mo`],
+    ] : [["Card", copyText.slice(0, 60)]];
+    let y = pad + 86;
+    ctx.font = "12px Inter, sans-serif";
+    for (const [k, v] of rows) {
+      ctx.fillStyle = "rgba(255,255,255,0.55)"; ctx.font = "700 10px Inter, sans-serif"; ctx.fillText(k.toUpperCase(), pad + 16, y);
+      ctx.fillStyle = "white"; ctx.font = "600 13px monospace"; ctx.fillText(String(v), pad + 180, y);
+      y += 24; ctx.fillStyle = "rgba(255,255,255,0.12)"; ctx.fillRect(pad + 16, y, w - pad * 2 - 32, 1); y += 12;
+    }
+    ctx.fillStyle = "#e8c877"; ctx.font = "600 11px Inter, sans-serif";
+    const line = r?.rate?.fairRange ? `Could you offer ≤${r.rate.fairRange[1]}% at ~${r.rate.feePct ?? 1}% fee?` : "";
+    if (line) { ctx.fillText(line, pad + 16, y + 6); }
+    const url = c.toDataURL("image/png");
+    const a = document.createElement("a"); a.href = url; a.download = "borrower-negotiation-card.png"; a.click();
+  };
   return (
     <section id="negotiation-card" className="overflow-hidden rounded-2xl bg-[#0b3b2c] text-white shadow-xl">
       <div className="flex items-center justify-between p-5 pb-0">
@@ -72,6 +111,9 @@ export default function NegotiationCard({ result, text }) {
           </button>
           {copied ? <span key={copied ? "t" : "f"} className="bc-toast pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 rounded-full bg-[#1c1611] px-3 py-1 text-xs font-bold text-white shadow">Copied to clipboard</span> : null}
         </div>
+        <button type="button" onClick={saveImage} className="flex-1 cursor-pointer rounded-xl bg-white py-3 text-sm font-bold text-[#0b3b2c] hover:bg-emerald-50">
+          Save as Image
+        </button>
         <button type="button" onClick={() => { doShare(); }} className="flex-1 cursor-pointer rounded-xl border border-white/40 bg-white/10 py-3 text-sm font-bold text-white hover:bg-white/20">
           Print / Save
         </button>

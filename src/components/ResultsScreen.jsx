@@ -243,7 +243,7 @@ export default function ResultsScreen({ result, profile, onRestart, onEdit }) {
           <p className="mt-2 text-xs italic text-[#6f6355]">* At your requested amount of {fmtLakhRounded(profile.requestedAmount)}, EMIs would be about {formatINR(Math.round((profile.requestedAmount / Math.max(r.safe.center, 1)) * (r.tenureTable[1]?.emi ?? r.emiNeeded)))}/mo higher at the same tenures — this table shows the safer amount.</p>
         </OutputCard>
 
-        <StressTestCard stress={r.stress} confidence={r.confidence} />
+        <StressTestCard stress={r.stress} confidence={r.confidence} ctx={{ safeAmount: r.safe.center, fairMid: r.rate.fairMid, safeTenureMonths: r.safe.tenureMonths, safeEmi: r.emiCeiling, fcf: r.cf.fcf, blendedIncome: r.cf.blendedIncome, emiNeeded: r.emiNeeded }} />
 
         {(r.consolidationNote || r.debtPayoffNote) && (
           <div className="bc-card anim-rise-2 border-l-4 !border-l-[#b97f1f] p-5">

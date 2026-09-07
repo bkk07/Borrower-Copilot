@@ -1,19 +1,21 @@
 // Stress test: two fixed scenarios (Final Spec §7-H). Pure function.
 import { emiForPrincipal } from "./finance.js";
 
-export function stressTest({ safeAmount, fairMid, safeTenureMonths, safeEmi, fcf, blendedIncome, emiNeeded }) {
-  // 1. Income drops 20% -> recompute FCF, does the ACTUAL loan EMI still fit?
+export function stressTest({ safeAmount, fairMid, safeTenureMonths, safeEmi, fcf, blendedIncome, emiNeeded, incomeDropPct = 20, rateDelta = 2 }) {
+  // 1. Income drops X% -> recompute FCF, does the ACTUAL loan EMI still fit?
   // (Spec narrative: "you would/would not still manage this EMI" — the EMI
   // of the loan asked for, not the theoretical max safe EMI.)
-  const stressedIncome = blendedIncome * 0.8;
+  const drop = Math.max(0, Math.min(30, Number(incomeDropPct) || 0)) / 100;
+  const delta = Math.max(0, Math.min(3, Number(rateDelta) || 0));
+  const stressedIncome = blendedIncome * (1 - drop);
   // Expenses + existing EMI are sticky; buffer scales with income (10% rule).
-  // We approximate: stressed FCF = fcf - 20% of income + buffer relief.
-  const stressedFcf = Math.round(fcf - blendedIncome * 0.2 + blendedIncome * 0.2 * 0.1);
+  // We approximate: stressed FCF = fcf - drop×income + buffer relief.
+  const stressedFcf = Math.round(fcf - blendedIncome * drop + blendedIncome * drop * 0.1);
   const need = Math.max(emiNeeded || 0, 0);
   const ratio = need > 0 ? stressedFcf / need : stressedFcf >= 0 ? 1 : 0;
   const incomeStatus = ratio >= 1 ? "pass" : ratio >= 0.7 ? "tight" : "fail";
-  // 2. Rate rises 2pp at the same amount -> does EMI stay within the safe ceiling?
-  const stressedEmi = Math.round(emiForPrincipal(safeAmount, fairMid + 2, safeTenureMonths));
+  // 2. Rate rises X pp at the same amount -> does EMI stay within the safe ceiling?
+  const stressedEmi = Math.round(emiForPrincipal(safeAmount, fairMid + delta, safeTenureMonths));
   // PASS = comfortably within safeEmi, TIGHT = above safeEmi but within FCF, FAIL otherwise.
   let rateStatus;
   let ratePass;
