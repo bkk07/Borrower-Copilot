@@ -9,13 +9,29 @@ import { stressTest } from "./stressTest.js";
 import { emiForPrincipal, principalForEmi, totalInterest } from "./finance.js";
 
 const PURPOSE_LABEL = {
-  wedding: "wedding",
-  medical: "medical / emergency",
-  education: "education",
-  business_stock: "business stock / expansion",
-  vehicle: "vehicle",
+  essential: "essential expense",
+  planned_personal: "planned personal / family expense",
+  home_improvement: "home improvement",
+  major_purchase: "major purchase",
+  income_growth: "starting or growing your income",
   debt_payoff: "paying off existing debt",
+  education: "education or career",
+  productive_asset: "income-generating asset",
   other: "your stated purpose",
+};
+
+// Financial-nature classification. Used only for tone / explanations;
+// affordability and cash flow remain the decision drivers.
+const PURPOSE_CLASS = {
+  essential: "essential",
+  planned_personal: "discretionary_personal",
+  home_improvement: "home",
+  major_purchase: "discretionary_purchase",
+  income_growth: "productive",
+  debt_payoff: "debt_repayment",
+  education: "education",
+  productive_asset: "productive_asset",
+  other: "other",
 };
 
 export function evaluate(profile) {
@@ -183,7 +199,12 @@ function decideVerdict(profile, cf, emiNeeded) {
 }
 
 function emergencyNeutral(profile) {
-  return profile.loanPurpose === "medical" || profile.loanPurpose === "education";
+  // Essential and education are treated neutrally — never penalised for being discretionary.
+  return profile.loanPurpose === "essential" || profile.loanPurpose === "education";
+}
+
+function purposeClass(purpose) {
+  return PURPOSE_CLASS[purpose] ?? "other";
 }
 
 function fmt(n) {
@@ -235,4 +256,4 @@ function buildCard(profile, lane, def, san, sanctionRange, safeRange, fairRange,
   return lines.join("\n");
 }
 
-export { PURPOSE_LABEL };
+export { PURPOSE_LABEL, PURPOSE_CLASS, purposeClass };

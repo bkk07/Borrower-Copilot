@@ -15,18 +15,42 @@ export const LOAN_TYPES = [
 ];
 
 export const LOAN_PURPOSES = [
-  { value: "wedding", label: "Wedding / family event" },
-  { value: "medical", label: "Medical / emergency" },
-  { value: "education", label: "Education" },
-  { value: "business_stock", label: "Business stock / expansion" },
-  { value: "vehicle", label: "Vehicle (incl. two-wheeler / e-scooter)" },
+  { value: "essential", label: "Essential expense" },
+  { value: "planned_personal", label: "Planned personal / family expense" },
+  { value: "home_improvement", label: "Home improvement" },
+  { value: "major_purchase", label: "Major purchase" },
+  { value: "income_growth", label: "Start or grow my income" },
   { value: "debt_payoff", label: "Pay off existing debt" },
-  { value: "other", label: "Other" },
+  { value: "education", label: "Education or career" },
+  { value: "productive_asset", label: "Income-generating asset" },
+  { value: "other", label: "Something else" },
 ];
+
+// Internal classification for rules / explanations. Affordability remains
+// the core factor — purpose never auto-approves or auto-rejects.
+export const PURPOSE_CLASS = {
+  essential: "essential",
+  planned_personal: "discretionary_personal",
+  home_improvement: "home",
+  major_purchase: "discretionary_purchase",
+  income_growth: "productive",
+  debt_payoff: "debt_repayment",
+  education: "education",
+  productive_asset: "productive_asset",
+  other: "other",
+};
+
+// Migration for drafts persisted before the Q1 taxonomy change.
+const LEGACY_PURPOSE_MAP = {
+  wedding: "planned_personal",
+  medical: "essential",
+  business_stock: "income_growth",
+  vehicle: "productive_asset",
+};
 
 // Ordered flow. Branch questions carry `showIf(profile)`.
 export const QUESTIONS = [
-  { id: "loanPurpose", group: "must", text: "What do you want the loan for?", kind: "choice", options: LOAN_PURPOSES, required: true, affects: "O1 verdict tone + explanation" },
+  { id: "loanPurpose", group: "must", text: "What are you planning to use the money for?", helper: "Choose the option that best describes your situation.", kind: "choice", options: LOAN_PURPOSES, required: true, affects: "O1 verdict tone + explanation" },
   { id: "requestedAmount", group: "must", text: "How much do you want to borrow? (₹)", kind: "amount", required: true, affects: "All outputs" },
   { id: "loanType", group: "must", text: "What type of loan is this?", kind: "choice", options: LOAN_TYPES, required: true, affects: "O2, O3 (lane selection)" },
   { id: "incomeType", group: "must", text: "How do you earn?", kind: "choice", options: INCOME_TYPES, required: true, affects: "Which extra questions appear" },
@@ -204,8 +228,11 @@ export function draftToProfile(d) {
     existingEmi = e == null ? "unknown" : e <= 0 ? "none" : e;
   }
 
+  const rawPurpose = d.loanPurpose || "other";
+  const loanPurpose = LEGACY_PURPOSE_MAP[rawPurpose] ?? rawPurpose;
+
   return {
-    loanPurpose: d.loanPurpose || "other",
+    loanPurpose,
     requestedAmount: num(d.requestedAmount) ?? 0,
     upcomingExpense: num(d.upcomingExpense),
     loanType:

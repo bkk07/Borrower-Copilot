@@ -1,15 +1,9 @@
 // Polished single-question renderer. Presentational only (helpers live in data/questions.js).
 import { setField } from "../data/questions.js";
 
-// One-line helper text per option — the "unique" product feel: every choice explains itself.
+// One-line helper text per option — only where it earns its place.
+// Q1 (loan purpose) intentionally has no per-option sub-text per UX spec.
 const OPTION_SUB = {
-  wedding: "Family event — judged on affordability, not the occasion",
-  medical: "Emergency — we stay neutral, never judgemental",
-  education: "Long-horizon need — tenure matters more here",
-  business_stock: "Productive use — noted qualitatively, never inflated into maths",
-  vehicle: "Includes two-wheelers & e-scooters",
-  debt_payoff: "We check whether new debt truly beats old debt",
-  other: "Anything else — the same cash-flow rules apply",
   personal: "No collateral · FOIR-based · 1–5 yrs",
   business_secured: "Against property · LAP-style · longer tenure",
   informal_small_ticket: "Small ticket / vehicle / gold-type · conservative limits",

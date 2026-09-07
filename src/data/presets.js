@@ -1,7 +1,8 @@
-// Demo presets matching Final Spec §13 (also used for manual verification).
+// Demo presets — mapped to the new purpose taxonomy.
+// Priya wedding -> planned_personal, Ravi business_stock -> income_growth, Anita vehicle -> productive_asset
 export const PRESETS = {
   priya: {
-    loanPurpose: "wedding",
+    loanPurpose: "planned_personal",
     requestedAmount: "800000",
     loanType: "personal",
     incomeType: "salaried",
@@ -33,7 +34,7 @@ export const PRESETS = {
     existingLenderOfferTenure: "",
   },
   ravi: {
-    loanPurpose: "business_stock",
+    loanPurpose: "income_growth",
     requestedAmount: "1500000",
     loanType: "business_secured",
     incomeType: "self_employed",
@@ -65,7 +66,7 @@ export const PRESETS = {
     existingLenderOfferTenure: "",
   },
   anita: {
-    loanPurpose: "vehicle",
+    loanPurpose: "productive_asset",
     requestedAmount: "150000",
     loanType: "informal_small_ticket",
     incomeType: "informal",

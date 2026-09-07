@@ -235,6 +235,7 @@ export default function App() {
                 </span>
               )}
               <h2 className="font-display text-2xl font-semibold leading-snug md:text-[1.7rem]">{q?.text}</h2>
+              {q?.helper ? <p className="mt-1 text-sm text-[#6f6355]">{q.helper}</p> : null}
               <div className="mt-4"><QuestionInput q={q} draft={draft} setDraft={setDraft} /></div>
             </div>
             {!canNext && <p className="mt-2 text-sm font-medium text-[#9a5b0b]">Answer to continue{q.group !== "must" ? " — or Skip" : ""}.</p>}
