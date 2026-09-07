@@ -3,7 +3,7 @@ import OutputCard from "./OutputCard.jsx";
 import StressTestCard from "./StressTestCard.jsx";
 import NegotiationCard from "./NegotiationCard.jsx";
 import { ConfBadge } from "./ui.jsx";
-import { formatINR, fmtRangeLakhRounded, fmtLakhRounded } from "../rules/finance.js";
+import { formatINR, fmtRangeLakh, fmtRangeLakhRounded, fmtLakhRounded } from "../rules/finance.js";
 
 function VerdictHero({ result, profile }) {
   const r = result;
@@ -109,6 +109,7 @@ export default function ResultsScreen({ result, profile, onRestart, onEdit }) {
           <div className="rounded-xl bg-[#faf5ea] p-3 text-xs leading-relaxed text-[#4a4238]">A lender may approve more than what looks comfortable based on your current cash flow.</div>
           <div className="mt-3"><DualBars sanctionRange={r.sanction.range} safeRange={r.safe.range} /></div>
           <p className="mt-2 text-[13px] text-[#6f6355]">Possible lender sanction: FOIR {Math.round(r.sanction.foirCap * 100)}% · {r.sanction.tenureMonths} mo @ ~{r.sanction.typicalRate}%{r.sanction.cappedByLtv ? " · capped at 50% of property value" : ""} &nbsp;|&nbsp; Safer range: {r.safe.tenureMonths} mo @ {r.rate.fairMid}%</p>
+          <details className="mt-2 text-xs text-[#6f6355]"><summary className="cursor-pointer font-semibold text-[#0b3b2c]">See precise amounts</summary><p className="mt-1">Sanction {fmtRangeLakh(r.sanction.range)} · Safer {fmtRangeLakh(r.safe.range)} — headlines are rounded to avoid false precision.</p></details>
           {r.verdict.key === "less" && (
             <p className="mt-2 rounded-xl bg-[#faecd2] p-3 text-sm">👉 Consider <b>{fmtLakhRounded(r.safe.center)}</b> instead of {fmtLakhRounded(profile.requestedAmount)} — same purpose, survivable EMI.</p>
           )}
@@ -143,7 +144,7 @@ export default function ResultsScreen({ result, profile, onRestart, onEdit }) {
             </div>
             <p className="text-xs text-[#6f6355]">{r.emiNeeded <= r.emiCeiling && r.emiCeiling > 0 ? "Your requested loan's estimated EMI is below your current safe EMI ceiling." : r.emiCeiling > 0 ? "Your requested loan's EMI would be above your safe ceiling — consider borrowing less." : "There is no comfortable EMI headroom today."}</p>
           </div>
-          <p className="mb-1 mt-3 text-xs font-bold uppercase tracking-widest text-[#6f6355]">Tenure trade-off · {fmtLakhRounded(r.safe.center)} @ {r.rate.fairMid}%</p>
+          <p className="mb-1 mt-3 text-xs font-bold uppercase tracking-widest text-[#6f6355]">Tenure trade-off — if you borrowed only the safer amount · {fmtLakhRounded(r.safe.center)} @ {r.rate.fairMid}%</p>
           <table className="bc-table w-full text-[15px]">
             <thead><tr><th>Tenure</th><th>EMI / mo</th><th>Total interest</th></tr></thead>
             <tbody>

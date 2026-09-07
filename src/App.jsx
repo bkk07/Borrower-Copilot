@@ -43,7 +43,10 @@ export default function App() {
       const raw = localStorage.getItem("bc_draft");
       if (!raw) return blankDraft;
       const parsed = JSON.parse(raw);
-      return { ...blankDraft, ...parsed };
+      // migrate stale lender-offer keys from pre-removal builds
+      const { existingLenderOfferRate, existingLenderOfferFee, existingLenderOfferTenure, ...rest } = parsed;
+      void existingLenderOfferRate; void existingLenderOfferFee; void existingLenderOfferTenure;
+      return { ...blankDraft, ...rest };
     } catch { return blankDraft; }
   });
   const [qIndex, setQIndex] = useState(() => {

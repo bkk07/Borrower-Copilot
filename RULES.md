@@ -35,7 +35,8 @@ differently from a salaried engineer's salary — because they really are differ
 | Income = 0 / no income | O1 = Don't Borrow immediately, skip money math | No income supports no EMI | My judgement |
 | EMI > income, or expenses ≥ income | FCF deeply negative → Don't Borrow, flag existing debt | Same FCF rule, surfaced plainly | My judgement |
 | Medical purpose | Neutral tone, no "discretionary" scolding | Criticising emergency borrowing is tone-deaf | My judgement |
-| Productive purpose (business stock) | Positive qualitative mention only, never a hard number | We cannot verify future earnings | My judgement |
+| Productive purpose (e.g. starting/growing income, income-generating asset) | Positive qualitative mention only, never a hard number | We cannot verify future earnings | My judgement |
+| Purpose taxonomy | 9 real-world categories (Essential, Planned personal/family, Home improvement, Major purchase, Start/grow income, Pay off debt, Education/career, Income-generating asset, Other) — see PURPOSE_CLASS below | Examples in challenge are test cases, not the taxonomy | My judgement |
 
 ## 4. Lender sanction rules (O2, bank side)
 
@@ -110,7 +111,23 @@ Mid-band rows are judgement interpolations. Confidence narrows the shown range: 
 
 Penalties: expenses unknown +1 · EMI amount unknown +2 · credit unknown +1 · savings unknown +1 ·
 branch extras missing +0.5 each · ITR missing +1 · informal income +1 (unverifiable) · cash-dominated self-employment +1 ·
-income as range +0.5 · upcoming large expense present does not directly penalise confidence (it is conservative via larger buffer + lump instead). Confidence directly sets every shown range width (amounts ±8/15/25%, rates narrowed per §6).
+income as range +0.5 · bounce +1 (repayment risk) · upcoming large expense present does not directly penalise confidence (it is conservative via larger buffer + lump instead). Confidence directly sets every shown range width (amounts ±8/15/25%, rates narrowed per §6).
+
+## 11a. Purpose Classes
+
+| Purpose value | Class | How used |
+|---|---|---|
+| `essential` | essential | Emergency-neutral tone |
+| `planned_personal` | discretionary_personal | Normal tone, affordability decides |
+| `home_improvement` | home | Normal tone |
+| `major_purchase` | discretionary_purchase | Normal tone |
+| `income_growth` | productive | Noted qualitatively, never inflates numbers |
+| `productive_asset` | productive_asset | Noted qualitatively |
+| `debt_payoff` | debt_repayment | Triggers swap analysis `debtPayoffNote` |
+| `education` | education | Emergency-neutral tone |
+| `other` | other | Neutral fallback |
+
+Purpose never auto-approves or auto-rejects; cash flow is the decider.
 
 ## 11. Product-specific rules (3 lanes only)
 
@@ -139,12 +156,12 @@ Implementation rule: unknowns are stored as literal `"unknown"`, never silent `0
 
 0.8 safe-EMI factor · 10/15% buffers · 50% cash discount · 85/90/95% gig factors · 35/40/60(+15)% expense ratios ·
 15% unknown-EMI placeholder · FOIR 40/45/55% · LTV 50% · all rate bands · APR simplification · typical rates/tenures/fees ·
-stress scenarios (−20%, +2pp, 70% "tight" line) · confidence weights and ±8/15/25% widening.
+stress scenarios (−20%, +2pp, 70% "tight" line for income drop; rate stress TIGHT = >safeEmi but ≤FCF) · confidence weights and ±8/15/25% widening + bounce +1.
 
-## 14. Limitations
+## 14. Limitations & Persistence
 
 No bureau data · all inputs self-reported · rate bands are static judgement, not live offers · no co-applicant splitting,
-no multiple properties, no foreign income · not a substitute for real underwriting · resets on refresh (no storage by design).
+no multiple properties, no foreign income · not a substitute for real underwriting · draft persists in browser `localStorage` for demo continuity (clear with Start over); no backend storage.
 
 ## 15. Sources
 

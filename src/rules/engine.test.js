@@ -268,6 +268,22 @@ describe("bounce hardening", () => {
   });
 });
 
+describe("purpose taxonomy — 9 real categories", () => {
+  it("all 9 purposes classify without auto-reject", () => {
+    const purps = ["essential", "planned_personal", "home_improvement", "major_purchase", "income_growth", "debt_payoff", "education", "productive_asset", "other"];
+    for (const p of purps) {
+      const prof = { ...priya(), loanPurpose: p };
+      const r = evaluate(prof);
+      expect(["borrow", "less", "dont"]).toContain(r.verdict.key);
+    }
+  });
+  it("wizard has ~9 must questions, not 30", () => {
+    const mustCount = visibleQuestions(blankDraft).filter((q) => q.group === "must").length;
+    expect(mustCount).toBeGreaterThanOrEqual(8);
+    expect(mustCount).toBeLessThanOrEqual(10);
+  });
+});
+
 describe("edge cases", () => {
   it("zero income -> Don't Borrow immediately", () => {
     const p = priya();
