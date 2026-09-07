@@ -1,95 +1,115 @@
-# Borrower Copilot — Know What's Safe Before You Borrow
+# Borrower Copilot
 
-**Borrower Copilot** is a browser-only decision assistant for Indian borrowers. It helps you answer four questions before you visit a bank: *Should I borrow? How much is safe? What's a fair interest rate? What EMI can I comfortably afford?*
+### Know what's safe before you borrow — not just what a bank will give you.
 
-Unlike a standard EMI calculator, it judges the loan itself — showing ranges, not false precision, and producing a one-page **Negotiation Card** you can take to the lender.
+> **A browser-only decision assistant for Indian borrowers.**
+> Answer ~12 questions → get 4 honest answers + a one-page negotiation card. No login, no backend, no data leaving your device.
 
-> **No login · No backend · No data stored · 100% in-browser · ~3 minutes**
+[![Build](https://img.shields.io/badge/build-passing-brightgreen)](#testing--quality)
+[![Tests](https://img.shields.io/badge/tests-44%20passing-brightgreen)](#testing--quality)
+[![Version](https://img.shields.io/badge/version-1.0-blue)](#)
+[![No Backend](https://img.shields.io/badge/backend-none-lightgrey)](#why-this-exists)
+
+---
+
+## Table of Contents
+- [Why This Exists](#why-this-exists)
+- [Key Features](#key-features)
+- [Live Demo — Try the Three Borrowers](#live-demo--try-the-three-borrowers)
+- [Quick Start](#quick-start)
+- [How It Works](#how-it-works)
+- [Project Structure](#project-structure)
+- [Testing & Quality](#testing--quality)
+- [Limitations](#limitations)
+- [Documentation](#documentation)
 
 ---
 
 ## Why This Exists
 
-A bank tells you what *it* is willing to give you. Nobody tells you what is actually *safe* for you, given your cash flow, existing EMIs, expenses, and safety buffer.
+A sanction letter tells you the maximum a bank *can* give. It doesn't tell you what remains *comfortable* after EMIs, rent, school fees, and a safety cushion for the unexpected.
 
-Borrower Copilot is the missing voice on the borrower's side:
+**Borrower Copilot** fills that gap:
 
-- Two numbers, clearly separated: **Possible lender sanction** (FOIR-based, lender view) vs **Safer borrowing range** (cash-flow based, your view)
-- Fair rate as a **band**, plus approx. all-in annual cost (with fee effect)
-- EMI ceiling comparison: **Requested-loan EMI vs Maximum safe EMI** + tenure trade-off table
-- One stress test: income −20% and rate +2%
-- Honest `Don't Borrow` when numbers say so — with a clear why
+| What Other Calculators Do | What Borrower Copilot Does |
+|---|---|
+| Takes amount + rate + tenure → EMI | Judges the loan: *Should you borrow at all?* |
+| Shows a single exact number | Shows **ranges** (`₹12–16L`) + precise details on demand |
+| Treats all income the same | Routes `salaried` vs `self-employed + property` vs `gig` differently |
+| Ignores uncertainty | `I don't know` widens the range and lowers confidence — never a silent `0` |
 
 ---
 
 ## Key Features
 
-- **Adaptive questionnaire** — 9 core questions + 2–5 branch extras for `salaried / self-employed / informal` incomes. ~12 questions total, everyone sees only their path.
-- **9 real-world purposes** — `Essential expense`, `Planned personal / family expense`, `Home improvement`, `Major purchase`, `Start or grow my income`, `Pay off existing debt`, `Education or career`, `Income-generating asset`, `Something else` (not tied to demo personas).
-- **Three loan lanes** — automatically routed: `Personal (45% FOIR)`, `Secured / Business (55% FOIR + 50% LTV)`, `Small-ticket / Informal (40% FOIR)` — so a shop owner with property isn't judged like a salaried employee.
-- **Honesty engine** — `Unknown` stays `Unknown`. Expenses/EMI unknown → `Estimated` label, wider ranges, lower confidence. Never silent zero.
-- **Live estimate** — verdict preview while you answer (desktop sidebar + mobile strip).
+**For Borrowers:**
+- **Adaptive Questionnaire — 12 questions on average.** 9 core + 2–5 branch extras. Salaried sees salary history; a shop owner sees ITR + cash + collateral; a gig worker sees stability + bounce + sole-earner. Everyone sees only their path.
+- **9 Real-World Purposes.** *Essential expense · Planned personal / family expense · Home improvement · Major purchase · Start or grow my income · Pay off existing debt · Education or career · Income-generating asset · Something else* — built for thousands of borrowers, not 3 personas.
+- **Two Numbers, Clearly Separated.** `Possible lender sanction` (what a bank *might* approve via FOIR) vs `Safer borrowing range` (what cash flow says is comfortable). Headlines rounded for readability, exact numbers one click away.
+- **Waterfall + Relief View.** Income → Expenses → EMIs → Buffer → FCF → Safe EMI shown as a stacked bar, plus a 12-dot relief strip when a short EMI frees headroom in 6–12 months.
+- **Stress Lab — Drag the Future.** Income `0→−30%` and Rate `+0→+3pp` sliders live-recompute `Pass / Tight / Fail` using the same engine you see in results.
+
+**For Negotiation:**
+- **One-Page Negotiation Card.** `Requested · Possible vs Safer range · Fair rate · Approx. all-in cost · Requested vs Max EMI · Why · Confidence` plus the line *“Could you offer ≤12.3% at ~1% fee? My fair range is 10.8–12.3%.”* and the rehearsal *“If they say 14%, reply: My max comfortable EMI is ₹26k/mo.”* — **Copy** + **Save as Image** (canvas, no library) + **Print** + **Shareable link** (`#s=...` hash, no backend).
+
+**For Honesty:**
+- **Multiple EMIs with Tenures.** Total EMI *and* per-loan horizon (`Within 6 months → >2 years`). `₹3k/1yr + ₹10k/2yr + ₹20k` shows `₹13k` relief — *display-only* headroom, verdict stays on today’s cash flow.
+- **Live Estimate.** Desktop sidebar + mobile strip update verdict preview as you answer.
 
 ---
 
-## Quick Start (under 5 minutes)
+## Live Demo — Try the Three Borrowers
 
-**Requirements:** Node 18+
+Home → **Try the three test borrowers** → prefilled **Review** → tap any row to edit → **See my results**
+
+| Persona | Situation | Ask | System |
+|---|---|---|---|
+| **Priya, 29** — Bengaluru, salaried | ₹1,10,000, EMI ₹14k, score 780 | ₹8L · *Planned personal / family expense* | **Borrow** — personal lane, `₹12–16L` safer |
+| **Ravi, 42** — Mysuru, kirana owner | ITR ₹4.2L/yr + cash ₹40–80k, property ₹45L free | ₹15L · *Start or grow my income* | **Borrow Less** — secured lane, 50% LTV-capped, `Tight` on Income −20% |
+| **Anita, 35** — Hubballi, gig | ₹26–30k variable, 3 app loans, bounce | ₹1.5L · *Income-generating asset* | **Don't Borrow** — safer `≈₹0`, `Low` + bounce warning |
+
+---
+
+## Quick Start
+
+**Requires:** Node 18+
 
 ```powershell
 npm install
-npm run dev
+npm run dev          # → http://localhost:5173
 ```
 
-Open `http://localhost:5173`
-
-Verify production build & tests:
-
+Check production build, tests and lint:
 ```powershell
 npm run build
 npm run preview
-npm test
+npm test            # 44 tests — cash-flow, LTV, rate, confidence, personas, bounce, edges
 npm run lint
 ```
 
-No environment variables, no services.
+No `.env`, no services, no database.
 
 ---
 
-## Try the Three Test Borrowers
-
-Home → **"Try the three test borrowers"**
-
-| Persona | Income | Ask | Expected |
-|---|---|---|---|
-| **Priya, 29** — Bengaluru, salaried | ₹1,10,000, EMI ₹14k, score 780 | ₹8L for *Planned personal / family expense* | **Borrow** — personal lane |
-| **Ravi, 42** — Mysuru, kirana owner | ITR ₹4.2L/yr + cash ₹40–80k, property ₹45L | ₹15L to *Start or grow my income* | **Borrow Less** — secured lane, LTV capped |
-| **Anita, 35** — Hubballi, gig | ₹26–30k variable, 3 app loans, bounce | ₹1.5L *Income-generating asset* | **Don't Borrow** — safe ≈₹0 |
-
-Each jumps to a prefilled **Review** screen → edit any answer → **Results**.
-
----
-
-## How It Works (High Level)
+## How It Works
 
 ```
 Answers → draftToProfile() → resolveLane() → Cash Flow (BI, FCF, Safe EMI)
-       → Lender Sanction (FOIR + LTV) → Fair Rate (band → narrowed by confidence)
-       → Safe Amount → Verdict (Borrow / Borrow Less / Don't Borrow)
-       → APR + Tenure Table → Stress Test → Confidence → Negotiation Card
+       → Lender Sanction (FOIR + LTV, age-capped to 60)
+       → Fair Rate (band narrowed by confidence) → Safe Amount
+       → Verdict (Borrow / Borrow Less / Don't Borrow)
+       → APR (approx. all-in) + Tenure Table + Stress Lab → Confidence → Negotiation Card
 ```
-
-All calculations are **pure functions** in `src/rules/` — same answers always give same results, separately testable from UI.
 
 **Core formulas (simplified):**
 
-- `Blended Income = Documented + Undocumented × 0.5`
-- `FCF = Blended Income − Existing EMI − Expenses − Safety Buffer (10% → 15% if sole earner/bounce/upcoming) − Upcoming/6`
-- `Safe EMI = FCF × 0.8` (20% breathing room)
-- `Lender Max EMI = FOIR cap × Verifiable Income − Existing EMI`
-- `APR ≈ nominal + fee% × 12 / tenureYears` (approx., labelled as estimate)
+- `Blended Income = Documented + Undocumented × 0.5` (gig: `×0.95 / 0.85 / 0.90`)
+- `FCF = Blended Income − Existing EMI − Expenses − 10% Buffer (15% if sole/bounce/upcoming) − Upcoming/6`
+- `Safe EMI = FCF × 0.8` — 20% breathing room, the single ceiling
+- `Lender Max EMI = FOIR cap (45% / 55% / 40%) × Verifiable Income − Existing EMI`
+- `APR ≈ nominal + fee% × 12 / tenureYears` — shown as *Approx. all-in annual cost*
 
-See full thresholds in [`RULES.md`](./RULES.md).
+> All rules are **pure functions** in `src/rules/` — same inputs → same outputs, UI-free and live-changeable. See [`RULES.md`](./RULES.md) for every threshold.
 
 ---
 
@@ -98,62 +118,58 @@ See full thresholds in [`RULES.md`](./RULES.md).
 ```
 src/
   data/
-    questions.js      Questions, branching (showIf), lane routing, draft→profile, 9 purposes
-    rateBands.js      Rate bands, FOIR caps, tenures, LTV, purpose classes
-    presets.js        Priya / Ravi / Anita demo data (43 tests rely on this)
-  rules/              Pure functions — no UI imports
-    cashFlow.js       DI / BI / FCF / Safe EMI (+ estimated flags)
-    sanction.js       FOIR + LTV sanction (age-capped to 60)
-    rate.js           Rate lookup + narrowing + APR breakdown
+    questions.js      Questions, branching (showIf), lane routing, draft→profile, 9 purposes, horizon + 3-EMI breakdown
+    rateBands.js      Rate bands, FOIR caps (45/55/40), tenures, LTV 50%, purpose classes
+    presets.js        Priya / Ravi / Anita — demos & test fixtures
+  rules/              Pure functions — zero UI imports
+    cashFlow.js       DI / BI / FCF / Safe EMI + expiring relief (12-mo)
+    sanction.js       FOIR + LTV sanction (age-capped)
+    rate.js           Band lookup → narrowing + APR breakdown
     confidence.js     Completeness + verifiability → High/Medium/Low + widening 8/15/25%
-    stressTest.js     Income −20% (Pass/Tight/Fail) + Rate +2pp (Pass/Tight/Fail vs safe ceiling)
-    verdict.js        O1–O4 aggregator + card + explanations
-    finance.js        EMI math, INR helpers (fmtLakhRounded for headlines)
-    engine.test.js    43 engine tests
+    stressTest.js     Interactive Income −30% & Rate +3pp lab (Pass/Tight/Fail vs safe ceiling)
+    verdict.js        O1–O4 aggregator, What-if amount slider, card
+    finance.js        EMI / principal math, INR formatting (rounded headlines)
+    engine.test.js    44 engine tests
   components/
-    Questionnaire.jsx  Single-question renderer (MoneyInput with live INR hint, StepperPicker for age/counts)
+    Questionnaire.jsx  MoneyInput (live INR hint) + StepperPicker (age/counts, no free typing) + horizon/breakdown
     ReviewAnswers.jsx  Grouped edit screen
-    ResultsScreen.jsx  O1 Hero + O2 Dual Bars + O3 Track + O4 EMI split (sticky) + Stress + Trace + Card
-    NegotiationCard.jsx Card with Copy / Print (Web Share fallback)
-    ui.jsx            Logo (SVG mark), Header, ConfBadge
-  App.jsx             Wizard (welcome → quiz → review → results) + localStorage persistence + live estimate
+    ResultsScreen.jsx  Hero + O2 Dual Bars + O3 Track + O4 EMI split (sticky) + Stress Lab + Waterfall + Relief + Trace + Card
+    NegotiationCard.jsx Card with Copy / Save as Image (canvas) / Print + Share link
+    ui.jsx            SVG Mark + Logo, Header, ConfBadge
+  App.jsx             Wizard (welcome → quiz → review → results) + localStorage + hash-share + live estimate
   index.css           Paper/ink/brand tokens, bc-* components, motion & print rules
 ```
 
-Change a threshold? Edit `src/rules/` or `src/data/rateBands.js` — UI updates without code change.
+Change a number? Edit `src/rules/` or `src/data/rateBands.js` — `npm test` stays green in <1s for the follow-up live change.
 
 ---
 
 ## Testing & Quality
 
 ```powershell
-npm test   # 43 tests: cash-flow, LTV, rate unknown→wide, confidence, 3 personas, bounce hardening, edges
-npm run lint
-npm run build   # 33 modules, ~82kB gzip
+npm test   # 44 tests: cash-flow & LTV, rate unknown→wide, confidence tiers, 3 personas, bounce hardening, purpose taxonomy, EMI tenure relief, edges
+npm run lint   # 0 errors
+npm run build  # 33 modules, ~83–85kB gzip
 ```
 
-All outputs are ranges. No hard claim like `17,89,209` in headlines — rounded to `₹12–16L` style with precise `Show exact numbers` expandable.
+Headlines never claim false precision (`17,89,209`): rounded to `₹12–16L`, precise on `Show exact numbers` expand.
 
 ---
 
 ## Limitations
 
-- Self-reported inputs only — no bureau pull
-- Static rate bands (assumptions, not live offers)
-- No co-applicant splitting, multiple properties, foreign income
-- Not a substitute for real underwriting
-- Draft persists in `localStorage` for demo (clear via *Start over*)
+Self-reported inputs only — no bureau pull · Static rate bands (assumptions, not live offers) · No co-applicant splitting, multiple properties, foreign income · Not a substitute for real underwriting · Draft persists in `localStorage` + shareable `#s=` hash for demo (clear via *Start over*).
 
 ---
 
 ## Documentation
 
-- **Rules:** [`RULES.md`](./RULES.md) — every rule, threshold, assumption (`what · value · why · source`)
-- **Run-throughs:** [`RUNTHROUGHS.md`](./RUNTHROUGHS.md) — 3 borrowers end-to-end with engine traces + cards
-- **Walkthrough:** [`WALKTHROUGH.md`](./WALKTHROUGH.md) — 5-minute demo script
+- **Rules:** [`RULES.md`](./RULES.md) — *what · value · why · source* for every rule, threshold and band
+- **Run-Throughs:** [`RUNTHROUGHS.md`](./RUNTHROUGHS.md) — Priya, Ravi, Anita end-to-end with engine traces and cards
+- **Walkthrough:** [`WALKTHROUGH.md`](./WALKTHROUGH.md) — 5-minute demo script: what to click, what builds next, what was cut
 
 ---
 
 ## License
 
-Internal demo for the Lokta Build Challenge. No license for production use — thresholds are documented assumptions, not financial advice.
+Built for the Lokta Build Challenge. Thresholds are documented assumptions, not financial advice. No license for production use.
