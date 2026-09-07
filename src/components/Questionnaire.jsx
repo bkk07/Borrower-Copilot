@@ -22,12 +22,12 @@ const OPTION_SUB = {
 };
 
 const LIMITS = {
-  requestedAmount: { min: 10000, max: 5000000 },
+  requestedAmount: { min: 0, max: 5000000 },
   age: { min: 18, max: 65 },
   creditScore: { min: 300, max: 900 },
-  collateralValue: { min: 100000, max: 20000000 },
-  income: { min: 5000, max: 5000000 },
-  incomeMax: { min: 5000, max: 5000000 },
+  collateralValue: { min: 0, max: 20000000 },
+  income: { min: 0, max: 5000000 },
+  incomeMax: { min: 0, max: 5000000 },
   cashMin: { min: 0, max: 5000000 },
   cashMax: { min: 0, max: 5000000 },
   existingEmi: { min: 0, max: 2000000 },
@@ -198,8 +198,14 @@ export default function QuestionInput({ q, draft, setDraft }) {
     case "requestedAmount":
       return (
         <div className="grid gap-3">
-          <MoneyInput value={draft.requestedAmount} onChange={(v) => set("requestedAmount", v)} placeholder="8,00,000" qId="requestedAmount" />
-          <p className="text-sm text-[#6f6355]">The starting point for every output — be honest, there's no penalty for a big number.</p>
+          <MoneyInput value={draft.requestedAmount} onChange={(v) => set("requestedAmount", v)} placeholder="0" qId="requestedAmount" />
+          <div className="no-print flex flex-wrap gap-1.5">
+            {[50000, 100000, 300000, 500000, 800000, 1500000].map((a) => (
+              <button key={a} type="button" onClick={() => set("requestedAmount", String(a))} className="rounded-full border border-[#e3d9c6] bg-white px-3 py-1 text-xs font-semibold hover:border-[#0b3b2c]">₹{new Intl.NumberFormat("en-IN").format(a)}</button>
+            ))}
+            <button type="button" onClick={() => set("requestedAmount", "0")} className="rounded-full border border-[#e3d9c6] bg-white px-3 py-1 text-xs font-semibold hover:border-[#0b3b2c]">₹0</button>
+          </div>
+          <p className="text-sm text-[#6f6355]">You can enter any amount from ₹0 — be honest, there's no penalty for a big number.</p>
         </div>
       );
     case "income":
