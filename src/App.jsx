@@ -237,9 +237,9 @@ export default function App() {
                   {q?.group === "optional" ? "✦ Optional" : `✦ For ${q?.group?.replace("_", " ")} profiles`} · skip anytime
                 </span>
               )}
-              <h2 className="font-display text-2xl font-semibold leading-snug md:text-[1.7rem]">{q?.text}</h2>
-              {q?.helper ? <p className="mt-1 text-sm text-[#6f6355]">{q.helper}</p> : null}
-              <div className="mt-4"><QuestionInput q={q} draft={draft} setDraft={setDraft} /></div>
+              <h2 id="q-title" className="font-display text-2xl font-semibold leading-snug md:text-[1.7rem]">{q?.text}</h2>
+              {q?.helper ? <p id="q-helper" className="mt-1 text-sm text-[#6f6355]">{q.helper}</p> : null}
+              <div className="mt-4" aria-labelledby="q-title" aria-describedby={q?.helper ? "q-helper" : undefined}><QuestionInput q={q} draft={draft} setDraft={setDraft} /></div>
             </div>
             {!canNext && <p className="mt-2 text-sm font-medium text-[#9a5b0b]">Answer to continue{q.group !== "must" ? " — or Skip" : ""}.</p>}
             <div className="mt-4 flex gap-2 pb-10">

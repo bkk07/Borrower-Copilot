@@ -65,9 +65,12 @@ export default function NegotiationCard({ result, text }) {
         <pre className="mx-5 whitespace-pre-wrap rounded-xl bg-black/25 p-4 font-mono text-[12.5px] leading-relaxed text-emerald-50">{fallback}</pre>
       )}
       <div className="no-print flex gap-2 p-5 pt-3">
-        <button type="button" onClick={doCopy} className="flex-1 cursor-pointer rounded-xl bg-[#b97f1f] py-3 text-sm font-bold text-white hover:brightness-110">
-          {copied ? "Copied ✓" : "Copy card"}
-        </button>
+        <div className="relative flex-1">
+          <button type="button" onClick={doCopy} className="w-full cursor-pointer rounded-xl bg-[#b97f1f] py-3 text-sm font-bold text-white hover:brightness-110">
+            {copied ? "Copied ✓" : "Copy card"}
+          </button>
+          {copied ? <span key={copied ? "t" : "f"} className="bc-toast pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 rounded-full bg-[#1c1611] px-3 py-1 text-xs font-bold text-white shadow">Copied to clipboard</span> : null}
+        </div>
         <button type="button" onClick={() => { doShare(); }} className="flex-1 cursor-pointer rounded-xl border border-white/40 bg-white/10 py-3 text-sm font-bold text-white hover:bg-white/20">
           Print / Save
         </button>

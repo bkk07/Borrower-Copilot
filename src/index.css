@@ -156,5 +156,9 @@ details.bc-details p { margin-top: .4rem; color: #4a4238; font-size: .9rem; line
   #root { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
 }
 
+/* toast for Copy card */
+@keyframes bc-toast { 0% { opacity: 0; transform: translateY(6px) scale(0.98); } 15% { opacity: 1; transform: none; } 85% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translateY(-4px); } }
+.bc-toast { animation: bc-toast 2s ease both; }
+
 /* visible focus */
 :focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }

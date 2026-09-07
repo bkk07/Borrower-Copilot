@@ -165,6 +165,7 @@ export default function ResultsScreen({ result, profile, onRestart, onEdit }) {
               ))}
             </tbody>
           </table>
+          <p className="mt-2 text-xs italic text-[#6f6355]">* At your requested amount of {fmtLakhRounded(profile.requestedAmount)}, EMIs would be about {formatINR(Math.round((profile.requestedAmount / Math.max(r.safe.center, 1)) * (r.tenureTable[1]?.emi ?? r.emiNeeded)))}/mo higher at the same tenures — this table shows the safer amount.</p>
         </OutputCard>
 
         <StressTestCard stress={r.stress} confidence={r.confidence} />
