@@ -8,6 +8,24 @@ import ReviewAnswers from "./components/ReviewAnswers.jsx";
 import ResultsScreen from "./components/ResultsScreen.jsx";
 import { Header, Logo } from "./components/ui.jsx";
 
+function encodeHash(draft) {
+  try {
+    return "#s=" + btoa(encodeURIComponent(JSON.stringify(draft)));
+  } catch {
+    return "";
+  }
+}
+function decodeHash() {
+  try {
+    const h = window.location.hash || "";
+    const m = h.match(/#s=([^&]+)/);
+    if (!m) return null;
+    return JSON.parse(decodeURIComponent(atob(m[1])));
+  } catch {
+    return null;
+  }
+}
+
 function tryEvaluate(draft) {
   try {
     const p = draftToProfile(draft);
@@ -39,6 +57,8 @@ export default function App() {
     } catch { return "welcome"; }
   });
   const [draft, setDraft] = useState(() => {
+    const fromHash = decodeHash();
+    if (fromHash && typeof fromHash === "object") return { ...blankDraft, ...fromHash };
     try {
       const raw = localStorage.getItem("bc_draft");
       if (!raw) return blankDraft;
@@ -56,10 +76,18 @@ export default function App() {
     } catch { return 0; }
   });
 
-  // Persist across refresh / accidental close (no backend, no account).
+  // Persist across refresh / accidental close (no backend, no account) + shareable hash.
   useEffect(() => { try { localStorage.setItem("bc_draft", JSON.stringify(draft)); } catch { /* ignore */ } }, [draft]);
   useEffect(() => { try { localStorage.setItem("bc_step", JSON.stringify(step)); } catch { /* ignore */ } }, [step]);
   useEffect(() => { try { localStorage.setItem("bc_qIndex", JSON.stringify(qIndex)); } catch { /* ignore */ } }, [qIndex]);
+  useEffect(() => {
+    try {
+      if (step === "results") {
+        const h = encodeHash(draft);
+        if (h) window.history.replaceState(null, "", h);
+      }
+    } catch { /* ignore */ }
+  }, [draft, step]);
 
   const visible = useMemo(() => visibleQuestions(draft), [draft]);
   const q = visible[Math.min(qIndex, visible.length - 1)];

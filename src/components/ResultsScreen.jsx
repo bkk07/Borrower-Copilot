@@ -80,6 +80,54 @@ function DualBars({ sanctionRange, safeRange }) {
   );
 }
 
+function Waterfall({ cf }) {
+  const total = Math.max(cf.blendedIncome, 1);
+  const segs = [
+    { label: "Income", val: cf.blendedIncome, color: "#0b3b2c" },
+    { label: "Existing EMI", val: -cf.existingEmi.value, color: "#b97f1f" },
+    { label: "Expenses", val: -cf.expenses.value, color: "#6f6355" },
+    { label: "Buffer " + Math.round(cf.buffer.rate * 100) + "%", val: -cf.buffer.value, color: "#a4261f" },
+  ];
+  if (cf.upcomingMonthly) segs.push({ label: "Upcoming/6", val: -cf.upcomingMonthly, color: "#8a6b2e" });
+  const fcfPct = Math.max(0, Math.round((cf.fcf / total) * 100));
+  const safePct = Math.max(0, Math.round((cf.safeEmi / total) * 100));
+  return (
+    <div className="grid gap-2">
+      <div className="flex h-3 overflow-hidden rounded-full bg-[#e9e1d0]">
+        {segs.map((s) => (
+          <div key={s.label} title={`${s.label} ${formatINR(s.val)}`} style={{ width: `${Math.max(1, Math.round(Math.abs(s.val) / total * 100))}%`, background: s.color }} />
+        ))}
+        <div title={`FCF ${formatINR(cf.fcf)}`} style={{ width: `${fcfPct}%`, background: "#176b3f" }} />
+      </div>
+      <div className="flex flex-wrap gap-1.5 text-xs">
+        {segs.map((s) => (
+          <span key={s.label} className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-full" style={{ background: s.color }} />{s.label} {formatINR(Math.abs(s.val))}</span>
+        ))}
+        <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[#176b3f]" />FCF {formatINR(cf.fcf)} → Safe {formatINR(cf.safeEmi)} ×0.8 ({fcfPct}%→{safePct}%)</span>
+      </div>
+    </div>
+  );
+}
+
+function ReliefStrip({ cf }) {
+  // 12 dots: dark = months with current EMI, light = after shortest EMI ends
+  const horizons = cf.expiring?.horizons || [];
+  const hasShort = horizons.includes("lt6m") || horizons.includes("6-12m");
+  const cutoff = horizons.includes("lt6m") ? 6 : horizons.includes("6-12m") ? 12 : 12;
+  if (!hasShort || cf.expiring.amount <= 0) return null;
+  return (
+    <div className="flex items-center gap-1.5 text-xs text-[#6f6355]">
+      <span className="font-semibold">12-mo:</span>
+      <span className="flex gap-1">
+        {Array.from({ length: 12 }).map((_, i) => (
+          <span key={i} className="h-2.5 w-2.5 rounded-full border" style={{ background: i < cutoff ? "#b3a893" : "#e9e1d0", borderColor: i < cutoff ? "#8a7a65" : "#d6cbb6" }} title={i < cutoff ? "High EMI" : "After relief"} />
+        ))}
+      </span>
+      <span>₹{cf.existingEmi.value.toLocaleString("en-IN")} now → ₹{(cf.existingEmi.value - cf.expiring.amount).toLocaleString("en-IN")} after {cutoff}m</span>
+    </div>
+  );
+}
+
 // Rate band track: full lane band with the fair-range marker positioned on it.
 function RateTrack({ fullBand, fairRange, aprLabel }) {
   const [lo, hi] = fullBand;
@@ -106,6 +154,16 @@ export default function ResultsScreen({ result, profile, onRestart, onEdit }) {
   const r = result;
   const [whatIf, setWhatIf] = useState(() => Math.round(result.safe.center || profile.requestedAmount));
   const whatIfEmi = Math.round(emiForPrincipal(whatIf, r.rate.fairMid, r.safe.tenureMonths));
+  const [saved, setSaved] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("bc_saved") || "null"); } catch { return null; }
+  });
+  const [copiedLink, setCopiedLink] = useState(false);
+  const saveCurrent = () => {
+    try { const data = { profile, result: { safe: r.safe, sanction: r.sanction, emiNeeded: r.emiNeeded, emiCeiling: r.emiCeiling } }; localStorage.setItem("bc_saved", JSON.stringify(data)); setSaved(data); } catch { /* ignore */ }
+  };
+  const copyLink = async () => {
+    try { await navigator.clipboard.writeText(window.location.href); setCopiedLink(true); setTimeout(() => setCopiedLink(false), 1800); } catch { /* ignore */ }
+  };
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-6">
       <VerdictHero result={r} profile={profile} />
@@ -196,13 +254,15 @@ export default function ResultsScreen({ result, profile, onRestart, onEdit }) {
         )}
 
         {r.cf.expiring?.amount > 0 ? (
-          <div className="rounded-xl bg-[#e2ece4] p-3 text-sm">
-            <span className="font-bold">After relief:</span> Once {r.cf.expiring.label} ({formatINR(r.cf.expiring.amount)}/mo) ends, your headroom improves to ~{formatINR(r.cf.safeEmiAfterRelief)}/mo safe (FCF ~{formatINR(r.cf.fcfAfterRelief)}/mo). Your current month still uses today’s EMI.
+          <div className="grid gap-2 rounded-xl bg-[#e2ece4] p-3 text-sm">
+            <p><span className="font-bold">After relief:</span> Once {r.cf.expiring.label} ({formatINR(r.cf.expiring.amount)}/mo) ends, your headroom improves to ~{formatINR(r.cf.safeEmiAfterRelief)}/mo safe (FCF ~{formatINR(r.cf.fcfAfterRelief)}/mo). Your current month still uses today’s EMI.</p>
+            <ReliefStrip cf={r.cf} />
           </div>
         ) : null}
         <div className="bc-card anim-rise-2 p-5">
           <p className="flex items-center gap-2 font-bold">🔍 Every number, traced <ConfBadge level={r.confidence.level} /></p>
-          <ul className="mt-2 list-disc space-y-1.5 pl-5 text-[14.5px] text-[#4a4238]">
+          <div className="mt-3"><Waterfall cf={r.cf} /></div>
+          <ul className="mt-3 list-disc space-y-1.5 pl-5 text-[14.5px] text-[#4a4238]">
             <li>
               Safe EMI ~{formatINR(r.cf.safeEmi)}/month — monthly income {fmtLakhRounded(r.cf.blendedIncome)}, existing EMI {r.cf.existingEmi.estimated ? <span>~{formatINR(r.cf.existingEmi.value)}/month <span className="rounded bg-amber-100 px-1 py-0.5 text-xs font-bold text-amber-900">Estimated</span>{r.cf.expiring?.horizon ? ` ends ${r.cf.existingEmi.horizonLabel}` : ""}</span> : `${formatINR(r.cf.existingEmi.value)}/month${r.cf.expiring?.label ? ` — ${r.cf.expiring.label}` : ""}`}, essential expenses {r.cf.expenses.estimated ? <span>~{formatINR(r.cf.expenses.value)}/month <span className="rounded bg-amber-100 px-1 py-0.5 text-xs font-bold text-amber-900">Estimated — not provided</span></span> : `${formatINR(r.cf.expenses.value)}/month`}, safety cushion {Math.round(r.cf.buffer.rate * 100)}%{r.cf.upcomingMonthly ? ` + ~${formatINR(r.cf.upcomingMonthly)}/month upcoming expense` : ""} → FCF {fmtLakhRounded(r.cf.fcf)}/month → ×0.8 breathing room.
             </li>
@@ -216,6 +276,17 @@ export default function ResultsScreen({ result, profile, onRestart, onEdit }) {
 
         <div className="anim-rise-3"><NegotiationCard result={{ ...r, profile }} /></div>
 
+        <div className="rounded-xl bg-[#0b3b2c] p-3 text-sm text-white">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="font-semibold">Save & compare</span>
+            <span className="text-xs text-emerald-200"> {saved ? `Saved ${fmtLakhRounded(saved.profile.requestedAmount)} vs Current ${fmtLakhRounded(profile.requestedAmount)}` : "No saved scenario yet"} </span>
+          </div>
+          <div className="mt-2 flex gap-2">
+            <button type="button" onClick={saveCurrent} className="flex-1 rounded-lg bg-white py-2 text-xs font-bold text-[#0b3b2c] hover:bg-emerald-50">Save this scenario</button>
+            <button type="button" onClick={copyLink} className="flex-1 rounded-lg border border-white/30 py-2 text-xs font-bold text-white hover:bg-white/10">{copiedLink ? "Link copied ✓" : "Copy share link"}</button>
+          </div>
+          {saved ? <p className="mt-2 text-xs text-emerald-100/80">Open the link on any phone — no login. Shareable via hash, decoded on load.</p> : null}
+        </div>
         <div className="no-print flex gap-2 pb-10">
           <button type="button" onClick={onEdit} className="bc-btn-ghost flex-1 !bg-white">← Edit answers</button>
           <button type="button" onClick={onRestart} className="bc-btn-ghost flex-1 !bg-[#1c1611] !text-white">↺ Start over</button>
