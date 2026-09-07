@@ -179,7 +179,7 @@ Calculation kept, wording borrower-friendly. `aprBreakdown()` `src/rules/rate.js
 | **Medium** | `≤3.5` | Some gaps or partly undocumented |
 | **Low** | `>3.5` | Many unknowns or mostly-cash income |
 
-**Penalties:** `Expenses unknown +1 · EMI unknown +2 · Credit unknown +1 · Savings unknown +1 · Branch extra missing +0.5 · ITR missing +1 · Informal cash +1 · Cash-dominated self-employment +1 · Income as range +0.5 · Bounce +1 · EMI horizon unknown +0.5`. Upcoming large expense is conservative via buffer/lump, not a direct penalty. EMI horizon/breakdown unknowns add `+0.5` each.
+**Penalties:** `Expenses unknown +1 · EMI unknown +2 · Credit unknown +1 · Savings unknown +1 · Branch extra missing +0.5 · ITR missing +1 · Informal cash +1 · Cash-dominated self-employment +1 · Income as range +0.5 · Bounce +1 · EMI horizon unknown +0.5`. Upcoming large expense is conservative via buffer/lump, not a direct penalty. EMI horizon/breakdown `Not sure` adds `+0.5` each.
 
 Confidence drives all ranges: Amounts `±8% / 15% / 25%` `confidence.js:52` + Rate narrowing above — confidence and width never contradict.
 

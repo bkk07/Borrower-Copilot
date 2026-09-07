@@ -36,7 +36,7 @@ A sanction letter tells you the maximum a bank *can* give. It doesn't tell you w
 | Takes amount + rate + tenure → EMI | Judges the loan: *Should you borrow at all?* |
 | Shows a single exact number | Shows **ranges** (`₹12–16L`) + precise details on demand |
 | Treats all income the same | Routes `salaried` vs `self-employed + property` vs `gig` differently |
-| Ignores uncertainty | `I don't know` widens the range and lowers confidence — never a silent `0` |
+| Ignores uncertainty | `I don't know` widens the range and lowers confidence — never counted as zero |
 
 ---
 
@@ -46,7 +46,7 @@ A sanction letter tells you the maximum a bank *can* give. It doesn't tell you w
 - **Two Numbers, Honestly Separated.** `Possible lender sanction` (what a bank *might* approve) vs `Safer borrowing range` (what cash flow says is comfortable) — plus a Waterfall bar and a 12-dot relief strip when a short EMI frees headroom.
 - **Stress Lab — Drag the Future.** Income `0→−30%` and Rate `+0→+3pp` sliders live-recompute `Pass / Tight / Fail` on the same engine.
 - **One-Page Negotiation Card.** `Requested · Possible vs Safer · Fair rate · Approx. all-in · EMIs · Why` plus *“Could you offer ≤12.3% at ~1% fee?”* and *“If they say 14%, reply: My max is ₹26k/mo.”* — **Copy / Save as Image / Print / Share link** (`#s=...` hash, no backend).
-- **9 Real-World Purposes & Honest Unknowns.** Built for thousands of borrowers, not 3 personas. `I don't know` widens the range and lowers confidence — never a silent `0`; live estimate updates as you answer.
+- **9 Real-World Purposes & Honest Unknowns.** Built for thousands of borrowers, not 3 personas. `I don't know` widens the range and lowers confidence — never counted as zero; live estimate updates as you answer.
 
 ---
 

@@ -46,7 +46,8 @@ Quick presets: Home → **Run Priya's / Ravi's / Anita's case →** jumps straig
 
 ## 3:30–4:30 Why the Other Two Matter
 
-- **Ravi, 42 — Mysuru, self-employed, ₹45L property** — Asks *Start or grow my income* ₹15L. ITR-only math would say ~₹5L. Because collateral is free, the app routes to **Secured / Business lane** (FOIR 55% + 50% LTV capped at ₹22.5L) → **Possible ₹17–23L but Safer ₹12–17L** → **Borrow Less**. Drag his **What-if slider to ₹13L → ₹23k fits**. Stress Lab: drag Income −20% → **Tight** is the honest signal. This proves lane routing works. His **EMI horizon** is `>2 years` so no short relief strip — correct.
+  - **Ravi, 42 — Mysuru, self-employed, ₹45L property** — Asks *Start or grow my income* ₹15L. ITR-only math would say ~₹5L. Because collateral is free, the app routes to **Secured / Business lane** (FOIR 55% + 50% LTV) → **Possible ₹17–23L but Safer ₹12–17L** → **Borrow Less**. Drag his **What-if slider to ₹13L → ₹23k fits**.
+  - **Stress Lab:** drag **Income −20% → Tight** is the honest signal. This proves lane routing works. His **EMI horizon** is `>2 years` so no short relief strip — correct.
 
 - **Anita, 35 — Hubballi, gig ₹26–30k variable, sole earner, 3 app loans, bounce, horizon Not sure** — Asks *Income-generating asset* ₹1.5L. Cash-flow `FCF −₹1,120 → Safe EMI 0`. → **Don't Borrow** with `Recent bounce increases risk` warning + consolidation note *Clear ₹35k high-rate loans first* + **Save & Compare** shows `Saved ₹8L vs Current ₹1.5L`. **Multiple EMIs:** if she had broken down `₹10k/6–12m + ₹3k/<6m`, the card would show **After relief +₹13k/mo** and the **12-dot strip** — but verdict stays on today, display-only headroom. Proves `Don't Borrow` is reachable and not branding the borrower, and tenure awareness works.
 
