@@ -320,6 +320,16 @@ export default function QuestionInput({ q, draft, setDraft }) {
       return <MoneyInput value={draft.itrAnnualIncome} onChange={(v) => set("itrAnnualIncome", v)} placeholder="e.g. 4,20,000 / yr" qId="itrAnnualIncome" />;
     case "variableIncomePct":
       return <StepperPicker qId="variableIncomePct" value={draft.variableIncomePct} onChange={(v) => set("variableIncomePct", v)} label="variable %" chips={[0, 10, 20, 30, 50]} />;
+    case "existingEmiHorizon":
+    case "emi2MonthsLeft":
+    case "emi3MonthsLeft":
+      return <ChoiceList options={q.options} value={draft[q.id]} onChange={(v) => set(q.id, v)} />;
+    case "existingEmiCount":
+      return <ChoiceList options={q.options} value={draft.existingEmiCount} onChange={(v) => set("existingEmiCount", v)} />;
+    case "emi2Amount":
+      return <MoneyInput value={draft.emi2Amount} onChange={(v) => set("emi2Amount", v)} placeholder="e.g. 10,000" qId="emi2Amount" />;
+    case "emi3Amount":
+      return <MoneyInput value={draft.emi3Amount} onChange={(v) => set("emi3Amount", v)} placeholder="e.g. 3,000" qId="emi3Amount" />;
     case "existingLoanCount":
       return <StepperPicker qId="existingLoanCount" value={draft.existingLoanCount} onChange={(v) => set("existingLoanCount", v)} label="loan count" chips={[0, 1, 2, 3, 5]} />;
     default:

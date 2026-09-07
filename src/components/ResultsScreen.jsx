@@ -178,11 +178,16 @@ export default function ResultsScreen({ result, profile, onRestart, onEdit }) {
           </div>
         )}
 
+        {r.cf.expiring?.amount > 0 ? (
+          <div className="rounded-xl bg-[#e2ece4] p-3 text-sm">
+            <span className="font-bold">After relief:</span> Once {r.cf.expiring.label} ({formatINR(r.cf.expiring.amount)}/mo) ends, your headroom improves to ~{formatINR(r.cf.safeEmiAfterRelief)}/mo safe (FCF ~{formatINR(r.cf.fcfAfterRelief)}/mo). Your current month still uses today’s EMI.
+          </div>
+        ) : null}
         <div className="bc-card anim-rise-2 p-5">
           <p className="flex items-center gap-2 font-bold">🔍 Every number, traced <ConfBadge level={r.confidence.level} /></p>
           <ul className="mt-2 list-disc space-y-1.5 pl-5 text-[14.5px] text-[#4a4238]">
             <li>
-              Safe EMI ~{formatINR(r.cf.safeEmi)}/month — monthly income {fmtLakhRounded(r.cf.blendedIncome)}, existing EMI {r.cf.existingEmi.estimated ? <span>~{formatINR(r.cf.existingEmi.value)}/month <span className="rounded bg-amber-100 px-1 py-0.5 text-xs font-bold text-amber-900">Estimated</span></span> : `${formatINR(r.cf.existingEmi.value)}/month`}, essential expenses {r.cf.expenses.estimated ? <span>~{formatINR(r.cf.expenses.value)}/month <span className="rounded bg-amber-100 px-1 py-0.5 text-xs font-bold text-amber-900">Estimated — not provided</span></span> : `${formatINR(r.cf.expenses.value)}/month`}, safety cushion {Math.round(r.cf.buffer.rate * 100)}%{r.cf.upcomingMonthly ? ` + ~${formatINR(r.cf.upcomingMonthly)}/month upcoming expense` : ""} → FCF {fmtLakhRounded(r.cf.fcf)}/month → ×0.8 breathing room.
+              Safe EMI ~{formatINR(r.cf.safeEmi)}/month — monthly income {fmtLakhRounded(r.cf.blendedIncome)}, existing EMI {r.cf.existingEmi.estimated ? <span>~{formatINR(r.cf.existingEmi.value)}/month <span className="rounded bg-amber-100 px-1 py-0.5 text-xs font-bold text-amber-900">Estimated</span>{r.cf.expiring?.horizon ? ` ends ${r.cf.existingEmi.horizonLabel}` : ""}</span> : `${formatINR(r.cf.existingEmi.value)}/month${r.cf.expiring?.label ? ` — ${r.cf.expiring.label}` : ""}`}, essential expenses {r.cf.expenses.estimated ? <span>~{formatINR(r.cf.expenses.value)}/month <span className="rounded bg-amber-100 px-1 py-0.5 text-xs font-bold text-amber-900">Estimated — not provided</span></span> : `${formatINR(r.cf.expenses.value)}/month`}, safety cushion {Math.round(r.cf.buffer.rate * 100)}%{r.cf.upcomingMonthly ? ` + ~${formatINR(r.cf.upcomingMonthly)}/month upcoming expense` : ""} → FCF {fmtLakhRounded(r.cf.fcf)}/month → ×0.8 breathing room.
             </li>
             <li>
               Credit score: {r.profile?.creditScoreKnown ? `${r.profile.creditScore} (${r.rate.bucket})` : <span>Unknown — <em>this does not mean your credit score is poor.</em> Band stays wide at {r.rate.fullBand[0]}–{r.rate.fullBand[1]}%.</span>}

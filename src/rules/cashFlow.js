@@ -77,14 +77,43 @@ export function effectiveExpenses(profile, incomeBase) {
   };
 }
 
+const HORIZON_LABEL = { lt6m: "within 6 months", "6-12m": "6–12 months", "1-2y": "1–2 years", gt2y: "more than 2 years", unknown: "unknown" };
+
+export function horizonLabel(h) {
+  return HORIZON_LABEL[h] ?? null;
+}
+
+export function expiringRelief(profile) {
+  const breakdown = profile.existingEmiBreakdown;
+  if (Array.isArray(breakdown) && breakdown.length > 0) {
+    const short = breakdown.filter((e) => e.monthsLeft === "lt6m" || e.monthsLeft === "6-12m");
+    const sum = short.reduce((s, e) => s + Number(e.amount || 0), 0);
+    if (sum > 0) return { amount: Math.round(sum), label: short.map((e) => `₹${Number(e.amount).toLocaleString("en-IN")} ends ${horizonLabel(e.monthsLeft)}`).join(", "), horizons: short.map((e) => e.monthsLeft) };
+  }
+  const h = profile.existingEmiHorizon;
+  if (h === "lt6m" || h === "6-12m") {
+    const total = typeof profile.existingEmi === "number" ? profile.existingEmi : 0;
+    if (total > 0) {
+      // without breakdown, assume the single horizon refers to the largest chunk — show total as relief
+      // but keep it conservative: only if horizon is short, treat total as expiring
+      return { amount: Math.round(total), label: `Existing EMI ends ${horizonLabel(h)}`, horizons: [h] };
+    }
+  }
+  return { amount: 0, label: null, horizons: [] };
+}
+
 export function effectiveEmi(profile, incomeBase) {
-  if (profile.existingEmi === "none") return { value: 0, estimated: false, label: "no existing EMI" };
-  if (typeof profile.existingEmi === "number")
-    return { value: profile.existingEmi, estimated: false, label: "you confirmed this" };
+  if (profile.existingEmi === "none") return { value: 0, estimated: false, label: "no existing EMI", horizon: null, expiring: { amount: 0, label: null } };
+  if (typeof profile.existingEmi === "number") {
+    const relief = expiringRelief(profile);
+    return { value: profile.existingEmi, estimated: false, label: "you confirmed this", horizon: profile.existingEmiHorizon || null, horizonLabel: horizonLabel(profile.existingEmiHorizon), expiring: relief };
+  }
   return {
     value: Math.round(incomeBase * UNKNOWN_EMI_RATIO),
     estimated: true,
     label: "estimated at 15% of income — you said you have an EMI but not the amount",
+    horizon: null,
+    expiring: { amount: 0, label: null },
   };
 }
 
@@ -108,6 +137,9 @@ export function cashFlow(profile) {
   const upcomingLump = Math.max(0, Math.round(Number(profile.upcomingExpense ?? 0) / 6)); // spread over 6 months
   const fcf = Math.round(incomeBase - emi.value - expenses.value - buf.value - upcomingLump);
   const safeEmi = Math.max(0, Math.round(fcf * 0.8)); // keep 20% breathing room
+  const expiring = emi.expiring || { amount: 0, label: null };
+  const fcfAfterRelief = expiring.amount > 0 ? Math.round(fcf + expiring.amount) : fcf;
+  const safeEmiAfterRelief = expiring.amount > 0 ? Math.max(0, Math.round(fcfAfterRelief * 0.8)) : safeEmi;
   return {
     documentedIncome: di,
     blendedIncome: incomeBase,
@@ -117,6 +149,9 @@ export function cashFlow(profile) {
     upcomingMonthly: upcomingLump,
     fcf,
     safeEmi,
+    fcfAfterRelief,
+    safeEmiAfterRelief,
+    expiring,
     stabilityNote: stabilityDiscountLabel(profile),
   };
 }

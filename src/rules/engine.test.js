@@ -289,6 +289,14 @@ describe("purpose taxonomy — 9 real categories", () => {
     expect(mustCount).toBeGreaterThanOrEqual(8);
     expect(mustCount).toBeLessThanOrEqual(10);
   });
+  it("3× EMI 33k split into 3/10/20 shows relief after 1yr vs single long EMI", () => {
+    const base = { ...priya(), existingEmi: 33000, requestedAmount: 400000, householdExpenses: 25000, age: 30, income: { amount: 90000, documented: true }, creditScoreKnown: true, creditScore: 760 };
+    const single = evaluate({ ...base, existingEmiHorizon: "gt2y" });
+    const split = evaluate({ ...base, existingEmiHorizon: "gt2y", existingEmiCount: 3, existingEmiBreakdown: [{ amount: 10000, monthsLeft: "6-12m" }, { amount: 3000, monthsLeft: "lt6m" }] });
+    expect(single.cf.expiring.amount).toBe(0); // single long horizon → no near-term relief
+    expect(split.cf.safeEmiAfterRelief).toBeGreaterThan(split.cf.safeEmi);
+    expect(split.cf.expiring.amount).toBe(13000);
+  });
 });
 
 describe("edge cases", () => {

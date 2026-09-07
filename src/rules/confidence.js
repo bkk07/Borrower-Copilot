@@ -32,6 +32,11 @@ export function confidenceScore(profile) {
     if (profile.soleEarner == null) penalise(0.5, "sole-earner status not stated");
   }
 
+  if (profile.existingEmiHorizon === "unknown") penalise(0.5, "existing EMI end date unknown");
+  if (Array.isArray(profile.existingEmiBreakdown)) {
+    for (const e of profile.existingEmiBreakdown) if (e.monthsLeft === "unknown") penalise(0.5, "one EMI's end date unknown");
+  }
+
   // --- verifiability ---
   if (profile.incomeType === "informal") penalise(1, "income is self-reported cash (unverifiable)");
   if (profile.incomeType === "self_employed") {

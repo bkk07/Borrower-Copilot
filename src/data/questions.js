@@ -82,6 +82,15 @@ export const QUESTIONS = [
   { id: "creditScore", group: "must", text: "Your credit score (300–900)?", kind: "number", required: false, showIf: (p) => p.creditScoreKnown === true || p.creditScoreKnown === "yes", affects: "O3 rate band" },
   { id: "savingsBufferMonths", group: "must", text: "How many months of expenses do you have saved as backup?", kind: "choice", options: [{ value: "0", label: "None (0)" }, { value: "<1", label: "Less than 1 month" }, { value: "1-3", label: "1–3 months" }, { value: "3-6", label: "3–6 months" }, { value: "6+", label: "6+ months" }, { value: "unknown", label: "Not sure" }], required: true, affects: "O1, stress test, confidence" },
 
+  // --- when existing EMI exists, tenure matters (short loan frees headroom) ---
+  { id: "existingEmiHorizon", group: "must", text: "When does your largest existing EMI finish?", kind: "choice", options: [{ value: "lt6m", label: "Within 6 months" }, { value: "6-12m", label: "6–12 months" }, { value: "1-2y", label: "1–2 years" }, { value: "gt2y", label: "More than 2 years" }, { value: "unknown", label: "Not sure" }], required: false, showIf: (p) => typeof p.existingEmi === "string" ? !!(Number(String(p.existingEmi).replace(/,/g, "")) > 0) : Number(p.existingEmi) > 0, affects: "Shows after your short loan closes + confidence" },
+  // If multiple EMIs, an optional breakdown makes the 12-month outlook precise (A+B).
+  { id: "existingEmiCount", group: "optional", text: "How many separate EMIs are in that total?", kind: "choice", options: [{ value: "1", label: "1" }, { value: "2", label: "2" }, { value: "3", label: "3 or more" }], required: false, showIf: (p) => typeof p.existingEmi === "string" ? !!(Number(String(p.existingEmi).replace(/,/g, "")) > 0) : Number(p.existingEmi) > 0, affects: "Enables per-EMI breakdown below" },
+  { id: "emi2Amount", group: "optional", text: "EMI 2 — amount (₹/month)", kind: "amount_optional", required: false, showIf: (p) => Number(p.existingEmiCount) >= 2, affects: "Per-EMI headroom calc" },
+  { id: "emi2MonthsLeft", group: "optional", text: "EMI 2 — months left", kind: "choice", options: [{ value: "lt6m", label: "Within 6 months" }, { value: "6-12m", label: "6–12 months" }, { value: "1-2y", label: "1–2 years" }, { value: "gt2y", label: "More than 2 years" }, { value: "unknown", label: "Not sure" }], required: false, showIf: (p) => Number(p.existingEmiCount) >= 2, affects: "When this EMI frees" },
+  { id: "emi3Amount", group: "optional", text: "EMI 3 — amount (₹/month)", kind: "amount_optional", required: false, showIf: (p) => Number(p.existingEmiCount) >= 3, affects: "Per-EMI headroom calc" },
+  { id: "emi3MonthsLeft", group: "optional", text: "EMI 3 — months left", kind: "choice", options: [{ value: "lt6m", label: "Within 6 months" }, { value: "6-12m", label: "6–12 months" }, { value: "1-2y", label: "1–2 years" }, { value: "gt2y", label: "More than 2 years" }, { value: "unknown", label: "Not sure" }], required: false, showIf: (p) => Number(p.existingEmiCount) >= 3, affects: "When this EMI frees" },
+
   // --- optional for anyone ---
   { id: "upcomingExpense", group: "optional", text: "Any large expense coming in the next 6 months? (₹ — school fees, medical, etc.)", kind: "amount_optional", required: false, affects: "Raises safety buffer (moves FCF / safe EMI)" },
 ];
@@ -109,7 +118,13 @@ export function isAnswered(q, draft) {
   if (q.id === "existingEmi") return draft.existingEmi !== "" || draft.existingEmiUnknown;
   if (q.id === "householdExpenses") return draft.householdExpenses !== "" || draft.expensesUnknown;
   if (q.id === "cashIncomeRange") return draft.cashMin !== "" || draft.cashMax !== "";
-  if (["upcomingExpense", "employmentYears", "variableIncomePct", "businessYears", "itrAnnualIncome", "existingLoanCount", "creditScore"].includes(q.id)) return true; // optional
+  if (["upcomingExpense", "employmentYears", "variableIncomePct", "businessYears", "itrAnnualIncome", "existingLoanCount", "creditScore", "emi2Amount", "emi3Amount"].includes(q.id)) return true; // optional
+  if (q.id === "existingEmiCount" && Number(String(draft.existingEmi).replace(/,/g, "")) <= 0) return true;
+  if (["existingEmiHorizon", "emi2MonthsLeft", "emi3MonthsLeft"].includes(q.id)) {
+    // horizon questions are required once shown, but don't block initial single-EMI path
+    if (q.id === "existingEmiHorizon") return v !== "" && v != null;
+    return true;
+  }
   if (q.group === "optional") return true;
   return v !== "" && v != null;
 }
@@ -181,6 +196,12 @@ export const blankDraft = {
   incomeMax: "",
   existingEmi: "",
   existingEmiUnknown: false,
+  existingEmiHorizon: "",
+  existingEmiCount: "",
+  emi2Amount: "",
+  emi2MonthsLeft: "",
+  emi3Amount: "",
+  emi3MonthsLeft: "",
   householdExpenses: "",
   expensesUnknown: false,
   age: "",
@@ -224,11 +245,25 @@ export function draftToProfile(d) {
 
   const rawPurpose = d.loanPurpose || "other";
   const loanPurpose = LEGACY_PURPOSE_MAP[rawPurpose] ?? rawPurpose;
+  const horizon = d.existingEmiHorizon || null;
+  const emiCount = d.existingEmiCount ? Number(d.existingEmiCount) : null;
+  const emi2 = num(d.emi2Amount);
+  const emi3 = num(d.emi3Amount);
+  let existingEmiBreakdown = null;
+  if (emiCount != null && emiCount >= 2) {
+    existingEmiBreakdown = [];
+    if (emi2 != null && emi2 > 0) existingEmiBreakdown.push({ amount: emi2, monthsLeft: d.emi2MonthsLeft || "unknown" });
+    if (emiCount >= 3 && emi3 != null && emi3 > 0) existingEmiBreakdown.push({ amount: emi3, monthsLeft: d.emi3MonthsLeft || "unknown" });
+    if (existingEmiBreakdown.length === 0) existingEmiBreakdown = null;
+  }
 
   return {
     loanPurpose,
     requestedAmount: num(d.requestedAmount) ?? 0,
     upcomingExpense: num(d.upcomingExpense),
+    existingEmiHorizon: horizon,
+    existingEmiCount: emiCount,
+    existingEmiBreakdown,
     loanType:
       d.loanType === "business_secured"
         ? "business_secured"
