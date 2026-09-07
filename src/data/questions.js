@@ -84,9 +84,6 @@ export const QUESTIONS = [
 
   // --- optional for anyone ---
   { id: "upcomingExpense", group: "optional", text: "Any large expense coming in the next 6 months? (₹ — school fees, medical, etc.)", kind: "amount_optional", required: false, affects: "Raises safety buffer (moves FCF / safe EMI)" },
-  { id: "existingLenderOfferRate", group: "optional", text: "Has a lender offered you a rate? What %? (optional)", kind: "number_optional", required: false, affects: "Lender-offer comparison line only" },
-  { id: "existingLenderOfferFee", group: "optional", text: "Processing fee they quoted? (% — optional)", kind: "number_optional", required: false, affects: "APR comparison only" },
-  { id: "existingLenderOfferTenure", group: "optional", text: "Tenure they offered? (months — optional)", kind: "number_optional", required: false, affects: "APR comparison only" },
 ];
 
 export function visibleQuestions(draft) {
@@ -112,7 +109,7 @@ export function isAnswered(q, draft) {
   if (q.id === "existingEmi") return draft.existingEmi !== "" || draft.existingEmiUnknown;
   if (q.id === "householdExpenses") return draft.householdExpenses !== "" || draft.expensesUnknown;
   if (q.id === "cashIncomeRange") return draft.cashMin !== "" || draft.cashMax !== "";
-  if (["existingLenderOfferRate", "existingLenderOfferFee", "existingLenderOfferTenure", "upcomingExpense", "employmentYears", "variableIncomePct", "businessYears", "itrAnnualIncome", "existingLoanCount", "creditScore"].includes(q.id)) return true; // optional
+  if (["upcomingExpense", "employmentYears", "variableIncomePct", "businessYears", "itrAnnualIncome", "existingLoanCount", "creditScore"].includes(q.id)) return true; // optional
   if (q.group === "optional") return true;
   return v !== "" && v != null;
 }
@@ -194,9 +191,6 @@ export const blankDraft = {
   existingLoanCount: "",
   recentBounce: "",
   soleEarner: "",
-  existingLenderOfferRate: "",
-  existingLenderOfferFee: "",
-  existingLenderOfferTenure: "",
   upcomingExpense: "",
 };
 
@@ -268,13 +262,6 @@ export function draftToProfile(d) {
       value: num(d.collateralValue),
       encumbered: d.collateralEncumbered === "" ? null : yn(d.collateralEncumbered),
     },
-    existingLenderOffer:
-      num(d.existingLenderOfferRate) != null
-        ? {
-            rate: num(d.existingLenderOfferRate),
-            fee: num(d.existingLenderOfferFee) ?? 0,
-            tenureMonths: num(d.existingLenderOfferTenure) ?? 48,
-          }
-        : null,
+    existingLenderOffer: null,
   };
 }

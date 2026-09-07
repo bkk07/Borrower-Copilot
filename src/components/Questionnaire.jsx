@@ -322,12 +322,6 @@ export default function QuestionInput({ q, draft, setDraft }) {
       return <StepperPicker qId="variableIncomePct" value={draft.variableIncomePct} onChange={(v) => set("variableIncomePct", v)} label="variable %" chips={[0, 10, 20, 30, 50]} />;
     case "existingLoanCount":
       return <StepperPicker qId="existingLoanCount" value={draft.existingLoanCount} onChange={(v) => set("existingLoanCount", v)} label="loan count" chips={[0, 1, 2, 3, 5]} />;
-    case "existingLenderOfferRate":
-      return <PlainNumber qId="default" value={draft.existingLenderOfferRate} onChange={(v) => set("existingLenderOfferRate", v)} />;
-    case "existingLenderOfferFee":
-      return <PlainNumber qId="default" value={draft.existingLenderOfferFee} onChange={(v) => set("existingLenderOfferFee", v)} />;
-    case "existingLenderOfferTenure":
-      return <PlainNumber qId="default" value={draft.existingLenderOfferTenure} onChange={(v) => set("existingLenderOfferTenure", v)} />;
     default:
       return <PlainNumber qId={q.id} value={draft[q.id]} onChange={(v) => set(q.id, v)} />;
   }

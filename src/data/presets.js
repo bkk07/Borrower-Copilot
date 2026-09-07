@@ -29,9 +29,6 @@ export const PRESETS = {
     existingLoanCount: "",
     recentBounce: "",
     soleEarner: "no",
-    existingLenderOfferRate: "",
-    existingLenderOfferFee: "",
-    existingLenderOfferTenure: "",
   },
   ravi: {
     loanPurpose: "income_growth",
@@ -61,9 +58,6 @@ export const PRESETS = {
     existingLoanCount: "",
     recentBounce: "",
     soleEarner: "",
-    existingLenderOfferRate: "",
-    existingLenderOfferFee: "",
-    existingLenderOfferTenure: "",
   },
   anita: {
     loanPurpose: "productive_asset",
@@ -93,8 +87,5 @@ export const PRESETS = {
     existingLoanCount: "3",
     recentBounce: "yes",
     soleEarner: "yes",
-    existingLenderOfferRate: "",
-    existingLenderOfferFee: "",
-    existingLenderOfferTenure: "",
   },
 };
