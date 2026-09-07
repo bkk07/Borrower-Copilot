@@ -1,13 +1,24 @@
 // Shared brand bits: logo, header, footer, badges.
+function Mark({ size = 36 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 36 36" aria-hidden="true" className="shrink-0">
+      <rect width="36" height="36" rx="10" fill="url(#bc-mark)" />
+      <path d="M11 18.2 L15.6 22.8 L25.2 13.2" fill="none" stroke="white" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M14 27.5 L14 27.5 M22 8.5 L22 8.5" stroke="white" strokeOpacity="0.0" />
+      <defs>
+        <linearGradient id="bc-mark" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#0b3b2c" />
+          <stop offset="100%" stopColor="#1d6b4d" />
+        </linearGradient>
+      </defs>
+    </svg>
+  );
+}
+
 export function Logo({ light = false }) {
   return (
     <span className="inline-flex items-center gap-2">
-      <span
-        className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-lg font-bold text-white"
-        style={{ background: "linear-gradient(135deg, #0b3b2c, #1d6b4d)" }}
-      >
-        ₹
-      </span>
+      <Mark size={36} />
       <span className={`font-display text-xl font-semibold leading-none ${light ? "text-white" : ""}`}>
         Borrower Copilot
       </span>

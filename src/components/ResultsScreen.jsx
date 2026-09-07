@@ -5,14 +5,29 @@ import NegotiationCard from "./NegotiationCard.jsx";
 import { ConfBadge } from "./ui.jsx";
 import { formatINR, fmtRangeLakh, fmtRangeLakhRounded, fmtLakhRounded } from "../rules/finance.js";
 
+function ThinIcon({ kind }) {
+  const d =
+    kind === "borrow"
+      ? "M11 18.2 L15.6 22.8 L25.2 13.2"
+      : kind === "less"
+        ? "M12 18 H24 M12 22 H20"
+        : "M13 13 L23 23 M23 13 L13 23";
+  return (
+    <svg width="28" height="28" viewBox="0 0 36 36" aria-hidden="true" className="shrink-0">
+      <rect width="36" height="36" rx="9" fill="white" fillOpacity="0.14" stroke="white" strokeOpacity="0.22" />
+      <path d={d} fill="none" stroke="white" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 function VerdictHero({ result, profile }) {
   const r = result;
   const theme =
     r.verdict.key === "borrow"
-      ? { bg: "linear-gradient(135deg,#0b3b2c,#176b3f)", chip: "#e3f1e6", chipInk: "#0b3b2c", icon: "✅" }
+      ? { bg: "linear-gradient(135deg,#0b3b2c,#176b3f)", chip: "#e3f1e6", chipInk: "#0b3b2c", icon: "borrow" }
       : r.verdict.key === "less"
-        ? { bg: "linear-gradient(135deg,#6b4408,#b97f1f)", chip: "#faecd2", chipInk: "#6b4408", icon: "⚠️" }
-        : { bg: "linear-gradient(135deg,#5c130e,#a4261f)", chip: "#f9e2df", chipInk: "#5c130e", icon: "🛑" };
+        ? { bg: "linear-gradient(135deg,#6b4408,#b97f1f)", chip: "#faecd2", chipInk: "#6b4408", icon: "less" }
+        : { bg: "linear-gradient(135deg,#5c130e,#a4261f)", chip: "#f9e2df", chipInk: "#5c130e", icon: "dont" };
   return (
     <section className="anim-rise overflow-hidden rounded-2xl text-white shadow-xl" style={{ background: theme.bg }}>
       <div className="p-5 md:p-7">
@@ -21,7 +36,9 @@ function VerdictHero({ result, profile }) {
           <span className="rounded-lg bg-black/25 px-2.5 py-1 text-xs font-semibold text-white/90">{r.laneLabel}</span>
           <ConfBadge level={r.confidence.level} />
         </div>
-        <h2 className="font-display mt-3 text-4xl font-semibold md:text-5xl"><span>{theme.icon}</span> {r.verdict.label.replace(/^(✅|⚠️|🛑)\s*/, "")}</h2>
+        <h2 className="font-display mt-3 flex items-center gap-3 text-4xl font-semibold md:text-5xl">
+          <ThinIcon kind={theme.icon} /> {r.verdict.label.replace(/^(✅|⚠️|🛑)\s*/, "")}
+        </h2>
         <p className="mt-2 max-w-xl text-[16px] leading-relaxed text-white/90">{r.verdict.reason}</p>
         <p className="mt-1 max-w-xl text-sm italic text-white/70">{r.verdict.tone}</p>
         {r.verdict.bounceWarning ? (
@@ -130,7 +147,7 @@ export default function ResultsScreen({ result, profile, onRestart, onEdit }) {
         <OutputCard kicker="O4 · EMI ceiling" title={r.emiCeiling > 0 ? `Never agree above ${formatINR(r.emiCeiling)}/month` : "No safe EMI today — agree to none"} badge={<ConfBadge level={r.confidence.level} />} delay={2}
           why={`${r.explanations.safeEmi} The ${fmtLakhRounded(profile.requestedAmount)} you asked for needs ~${formatINR(r.emiNeeded)}/month at a fair rate.`}>
           <div className="grid gap-2 rounded-xl bg-white p-3">
-            <div className="flex items-baseline justify-between">
+            <div className="sticky top-0 z-[1] -mx-3 -mt-3 flex items-baseline justify-between rounded-t-xl bg-[#faf5ea] px-3 py-2">
               <span className="text-xs font-bold uppercase tracking-widest text-[#6f6355]">Your requested loan</span>
               <span className="font-display text-lg font-bold">{fmtLakhRounded(profile.requestedAmount)}</span>
             </div>

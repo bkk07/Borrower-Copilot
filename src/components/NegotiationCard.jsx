@@ -9,9 +9,10 @@ export default function NegotiationCard({ result, text }) {
   const hasResult = !!result;
   const r = result;
   const feeHint = r?.rate?.feePct ? `~${r.rate.feePct}%` : "per lender";
+  void feeHint;
   const negotiationLine =
     r && r.rate?.fairRange
-      ? `Ask whether the lender can offer ≤${r.rate.fairRange[1]}% with ${feeHint} processing fee.`
+      ? `Ask whether the lender can offer ≤${r.rate.fairRange[1]}% with ${r.rate.feePct ? `~${r.rate.feePct}%` : "per lender"} processing fee.`
       : null;
   const rows = hasResult ? [
     ["Requested", fmtRangeLakh([r.profile?.requestedAmount, r.profile?.requestedAmount])],
@@ -24,7 +25,7 @@ export default function NegotiationCard({ result, text }) {
     ["Why", r.verdict.reason],
     ["Confidence", r.confidence.level],
   ] : null;
-  const waText = encodeURIComponent(copyText);
+  void encodeURIComponent(copyText);
   const [copied, setCopied] = useState(false);
   const doCopy = async () => {
     try {
@@ -63,23 +64,12 @@ export default function NegotiationCard({ result, text }) {
       ) : (
         <pre className="mx-5 whitespace-pre-wrap rounded-xl bg-black/25 p-4 font-mono text-[12.5px] leading-relaxed text-emerald-50">{fallback}</pre>
       )}
-      <div className="no-print flex flex-wrap gap-2 p-5 pt-3">
+      <div className="no-print flex gap-2 p-5 pt-3">
         <button type="button" onClick={doCopy} className="flex-1 cursor-pointer rounded-xl bg-[#b97f1f] py-3 text-sm font-bold text-white hover:brightness-110">
-          {copied ? "Copied ✓" : "⧉ Copy"}
+          {copied ? "Copied ✓" : "Copy card"}
         </button>
-        <a
-          href={`https://wa.me/?text=${waText}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex-1 cursor-pointer rounded-xl border border-white/40 bg-white/10 py-3 text-center text-sm font-bold text-white hover:bg-white/20"
-        >
-          Share on WhatsApp
-        </a>
-        <button type="button" onClick={doShare} className="flex-1 cursor-pointer rounded-xl border border-white/40 py-3 text-sm font-bold text-white hover:bg-white/10">
-          Share · Print
-        </button>
-        <button type="button" onClick={() => window.print()} className="flex-1 cursor-pointer rounded-xl border border-white/40 py-3 text-sm font-bold text-white hover:bg-white/10">
-          🖨 Print
+        <button type="button" onClick={() => { doShare(); }} className="flex-1 cursor-pointer rounded-xl border border-white/40 bg-white/10 py-3 text-sm font-bold text-white hover:bg-white/20">
+          Print / Save
         </button>
       </div>
     </section>

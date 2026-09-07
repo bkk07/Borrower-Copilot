@@ -109,8 +109,8 @@ export default function App() {
                   <div className="my-3 h-px bg-gradient-to-r from-[#b97f1f] via-[#b97f1f]/40 to-transparent" />
                   <p className="font-display text-lg italic leading-snug text-emerald-50">"The ₹8,00,000 needs ~₹20,891/month — inside your safe EMI of ₹36,000."</p>
                   <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2.5 font-mono text-[13px]">
-                    <div><dt className="text-[10px] uppercase tracking-widest text-emerald-200/70">Bank may offer</dt><dd className="font-bold">₹13.3–17.9L</dd></div>
-                    <div><dt className="text-[10px] uppercase tracking-widest text-emerald-200/70">Safe for you</dt><dd className="font-bold text-amber-200">₹11.7–15.9L</dd></div>
+                    <div><dt className="text-[10px] uppercase tracking-widest text-emerald-200/70">Possible sanction</dt><dd className="font-bold">₹13–18L</dd></div>
+                    <div><dt className="text-[10px] uppercase tracking-widest text-emerald-200/70">Safer range</dt><dd className="font-bold text-amber-200">₹12–16L</dd></div>
                     <div><dt className="text-[10px] uppercase tracking-widest text-emerald-200/70">Fair rate</dt><dd className="font-bold">10.8–12.3%</dd></div>
                     <div><dt className="text-[10px] uppercase tracking-widest text-emerald-200/70">Max EMI</dt><dd className="font-bold">₹36,000/mo</dd></div>
                   </dl>
@@ -261,13 +261,13 @@ export default function App() {
             <div className="sticky top-20 grid gap-3">
               <div className="bc-card p-4">
                 <p className="bc-eyebrow">Why we ask</p>
-                <p className="mt-1 text-sm leading-relaxed text-[#4a4238]">{q?.affects ? `${q.affects}.` : "Every question moves at least one number — nothing here is small talk."}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-[#4a4238]">{q?.affects ?? "Every question moves at least one number — nothing here is small talk."}</p>
               </div>
               <div className="rounded-2xl bg-[#0b3b2c] p-4 text-white">
                 <p className="text-xs font-bold uppercase tracking-widest text-emerald-200/70">Live estimate</p>
                 {live && live.cf.blendedIncome > 0 ? (
                   <div className="mt-1 text-sm">
-                    <p className="font-display text-xl font-semibold">{live.verdict.key === "borrow" ? "✅ Looking borrowable" : live.verdict.key === "less" ? "⚠️ Heading to borrow-less" : "🛑 Heading to don't-borrow"}</p>
+                    <p className="font-display text-xl font-semibold">{live.verdict.key === "borrow" ? "Looking borrowable" : live.verdict.key === "less" ? "Heading to borrow-less" : "Heading to don't-borrow"}</p>
                     <p className="mt-1 text-emerald-50/85">Safe EMI so far: <b>{formatINR(live.cf.safeEmi)}/mo</b></p>
                     <p className="text-emerald-50/85">Fair rate so far: <b>{live.rate.fairRange[0]}–{live.rate.fairRange[1]}%</b> · {live.confidence.level}</p>
                   </div>
@@ -285,7 +285,7 @@ export default function App() {
         {live && live.cf.blendedIncome > 0 && (
           <div className="no-print sticky bottom-0 border-t border-[#e3d9c6] bg-[#0b3b2c] px-4 py-2.5 text-white md:hidden">
             <p className="text-center text-[13px]">
-              <b>Live:</b> {live.verdict.key === "borrow" ? "✅ borrowable" : live.verdict.key === "less" ? "⚠️ borrow less" : "🛑 risky"} · safe EMI <b>{formatINR(live.cf.safeEmi)}</b> · {live.rate.fairRange[0]}–{live.rate.fairRange[1]}%
+              <b>Live:</b> {live.verdict.key === "borrow" ? "borrowable" : live.verdict.key === "less" ? "borrow less" : "at risk"} · safe EMI <b>{formatINR(live.cf.safeEmi)}</b> · {live.rate.fairRange[0]}–{live.rate.fairRange[1]}%
             </p>
           </div>
         )}

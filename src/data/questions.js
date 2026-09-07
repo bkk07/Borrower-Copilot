@@ -10,7 +10,7 @@ export const INCOME_TYPES = [
 export const LOAN_TYPES = [
   { value: "personal", label: "Personal loan (unsecured)" },
   { value: "business_secured", label: "Business / secured loan (against property)" },
-  { value: "informal_small_ticket", label: "Small-ticket / vehicle / gold-type loan" },
+  { value: "informal_small_ticket", label: "Small-ticket / informal loan" },
   { value: "unsure", label: "Not sure — help me choose" },
 ];
 

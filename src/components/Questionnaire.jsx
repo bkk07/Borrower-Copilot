@@ -6,7 +6,7 @@ import { setField } from "../data/questions.js";
 const OPTION_SUB = {
   personal: "No collateral · FOIR-based · 1–5 yrs",
   business_secured: "Against property · LAP-style · longer tenure",
-  informal_small_ticket: "Small ticket / vehicle / gold-type · conservative limits",
+  informal_small_ticket: "Small ticket / informal · conservative limits",
   unsure: "We'll guess your lane from income — flagged as a guess",
   salaried: "Fixed salary — the simplest, most verifiable case",
   self_employed: "Business + cash income — we count cash at 50%",
