@@ -3,7 +3,7 @@ import OutputCard from "./OutputCard.jsx";
 import StressTestCard from "./StressTestCard.jsx";
 import NegotiationCard from "./NegotiationCard.jsx";
 import { ConfBadge } from "./ui.jsx";
-import { formatINR, fmtRangeLakh, fmtRangeLakhRounded, fmtLakhRounded } from "../rules/finance.js";
+import { formatINR, fmtRangeLakh, fmtRangeLakhRounded, fmtLakhRounded, emiForPrincipal } from "../rules/finance.js";
 
 function ThinIcon({ kind }) {
   const d =
@@ -104,6 +104,8 @@ function RateTrack({ fullBand, fairRange, aprLabel }) {
 
 export default function ResultsScreen({ result, profile, onRestart, onEdit }) {
   const r = result;
+  const [whatIf, setWhatIf] = useState(() => Math.round(result.safe.center || profile.requestedAmount));
+  const whatIfEmi = Math.round(emiForPrincipal(whatIf, r.rate.fairMid, r.safe.tenureMonths));
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-6">
       <VerdictHero result={r} profile={profile} />
@@ -122,7 +124,14 @@ export default function ResultsScreen({ result, profile, onRestart, onEdit }) {
             <p className="mt-2 rounded-xl bg-[#faecd2] p-3 text-sm">👉 Consider <b>{fmtLakhRounded(r.safe.center)}</b> instead of {fmtLakhRounded(profile.requestedAmount)} — same purpose, survivable EMI.</p>
           )}
           {r.safe.center <= 0 && (
-            <p className="mt-2 rounded-xl bg-[#f9e2df] p-3 text-sm">A lender may still offer a loan, but that does not mean the loan is affordable for you. Your safer borrowing range is ≈ ₹0 today.</p>
+            <div className="mt-2 grid gap-2 rounded-xl bg-[#f9e2df] p-3 text-sm">
+              <p>A lender may still offer a loan, but that does not mean the loan is affordable for you. Your safer borrowing range is ≈ ₹0 today.</p>
+              <div className="flex flex-wrap gap-2">
+                <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-[#a4261f]">Pause plan</span>
+                {r.consolidationNote ? <span className="rounded-full bg-white px-3 py-1 text-xs text-[#4a4238]">Clear high-rate loans first — frees ~{formatINR(r.cf.existingEmi.value)}/mo</span> : null}
+                {r.cf.expiring?.amount > 0 ? <span className="rounded-full bg-white px-3 py-1 text-xs text-[#4a4238]">Model after 12 months: +{formatINR(r.cf.expiring.amount)}/mo relief</span> : <span className="rounded-full bg-white px-3 py-1 text-xs text-[#4a4238]">Fix bounce & savings before re-applying</span>}
+              </div>
+            </div>
           )}
         </OutputCard>
 
@@ -151,6 +160,14 @@ export default function ResultsScreen({ result, profile, onRestart, onEdit }) {
               <span className="font-bold text-[#0b3b2c]">~{formatINR(r.emiCeiling)}/month</span>
             </div>
             <p className="text-xs text-[#6f6355]">{r.emiNeeded <= r.emiCeiling && r.emiCeiling > 0 ? "Your requested loan's estimated EMI is below your current safe EMI ceiling." : r.emiCeiling > 0 ? "Your requested loan's EMI would be above your safe ceiling — consider borrowing less." : "There is no comfortable EMI headroom today."}</p>
+          </div>
+          <div className="rounded-xl bg-[#faf5ea] p-3">
+            <div className="flex items-baseline justify-between">
+              <span className="text-xs font-bold uppercase tracking-widest text-[#6f6355]">Try a smaller amount</span>
+              <span className="font-display text-sm font-bold">{fmtLakhRounded(whatIf)} → ~{formatINR(whatIfEmi)}/mo</span>
+            </div>
+            <input type="range" min={Math.round(Math.min(r.safe.center, profile.requestedAmount) * 0.3)} max={Math.round(Math.max(profile.requestedAmount * 1.2, r.safe.center * 1.5) || 100000)} step={10000} value={whatIf} onChange={(e) => setWhatIf(Number(e.target.value))} className="mt-2 w-full accent-[#0b3b2c]" aria-label="Try a smaller amount" />
+            <p className="mt-1 text-xs text-[#6f6355]">{whatIfEmi <= r.emiCeiling && r.emiCeiling > 0 ? "This fits within your safe ceiling." : whatIfEmi > r.emiCeiling ? "This would be above your safe ceiling." : "No safe headroom — lower the amount."} Same rate · {r.safe.tenureMonths} months</p>
           </div>
           <p className="mb-1 mt-3 text-xs font-bold uppercase tracking-widest text-[#6f6355]">Tenure trade-off — if you borrowed only the safer amount · {fmtLakhRounded(r.safe.center)} @ {r.rate.fairMid}%</p>
           <table className="bc-table w-full text-[15px]">

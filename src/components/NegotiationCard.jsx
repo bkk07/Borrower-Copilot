@@ -59,6 +59,7 @@ export default function NegotiationCard({ result, text }) {
             </div>
           ))}
           {negotiationLine ? <p className="mt-2 rounded bg-white/10 p-2 text-[12px] font-semibold text-amber-200">💬 {negotiationLine} <span className="font-normal text-emerald-50">(Approx. all-in cost is an estimate — actual APR depends on the lender's fees.)</span></p> : null}
+          {r.rate?.fairRange ? <p className="mt-2 rounded bg-white/10 p-2 text-[12px] text-emerald-50">If they say 14%, reply: <span className="font-semibold text-white">"My fair range is {r.rate.fairRange[0]}–{r.rate.fairRange[1]}%, and my max comfortable EMI is {formatINR(r.cf.safeEmi)}/mo. Can we structure to that?"</span></p> : null}
           {r.lenderComparison && <p className="text-[12px] text-amber-200">{r.lenderComparison.text}</p>}
         </div>
       ) : (
