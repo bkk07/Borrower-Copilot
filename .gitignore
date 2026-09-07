@@ -66,5 +66,9 @@ firebase-debug.log
 firestore-debug.log
 ui-debug.log
 
+# Challenge specs — keep local only, not in repo
+borrower-copilot-final-spec.md
+Lokta_Borrower_Copilot_Build_Challenge_v2*.html
+
 # Misc
 *.bak
