@@ -5,7 +5,9 @@ export function confidenceScore(profile) {
   const penalties = [];
   const penalise = (pts, reason) => penalties.push({ pts, reason });
 
-  // --- completeness ---
+  // --- completeness + bounce risk ---
+  if (profile.recentBounce === true)
+    penalise(1, "recent payment bounce — repayment risk is higher");
   if (profile.householdExpenses === "unknown")
     penalise(1, "expenses estimated — you didn't confirm them");
   if (profile.existingEmi === "unknown")

@@ -7,6 +7,7 @@ import { confidenceScore } from "./confidence.js";
 import { evaluate } from "./verdict.js";
 import { draftToProfile, visibleQuestions, isAnswered, resolveLane, blankDraft } from "../data/questions.js";
 void blankDraft;
+import { stressTest } from "./stressTest.js";
 import { PRESETS } from "../data/presets.js";
 
 const priya = () => draftToProfile({ ...PRESETS.priya });
@@ -218,6 +219,52 @@ describe("branching + profile mapping", () => {
     void base;
     // upcomingExpense raises buffer + lump so FCF necessarily falls
     expect(evaluate(withExp).cf.safeEmi).toBeLessThan(evaluate(priya()).cf.safeEmi);
+  });
+});
+
+describe("bounce hardening", () => {
+  it("bounce + negative FCF -> Don't Borrow", () => {
+    const p = { ...anita(), recentBounce: true };
+    p.income = { amount: [26000, 30000], documented: false };
+    const r = evaluate(p);
+    expect(r.verdict.key).toBe("dont");
+    expect(r.verdict.bounceWarning).toMatch(/bounce/i);
+  });
+  it("bounce + positive FCF -> normal affordability verdict + warning, not auto-Don't", () => {
+    const p = { ...priya(), recentBounce: true };
+    const r = evaluate(p);
+    expect(r.verdict.key).toBe("borrow");
+    expect(r.verdict.bounceWarning).toMatch(/bounce/i);
+    expect(confidenceScore(p).reasons.join(" ")).toMatch(/bounce/i);
+  });
+  it("rate stress above safe EMI but within FCF -> TIGHT not PASS", () => {
+    // safeEmi 42300, fcf 50000, stressed amount 43722 lands between them -> tight per new logic
+    const s = stressTest({ safeAmount: 1600000, fairMid: 12, safeTenureMonths: 48, safeEmi: 42300, fcf: 50000, blendedIncome: 100000, emiNeeded: 30000 });
+    expect(s.rateRise.status).toBe("tight");
+    expect(s.rateRise.pass).toBe(false);
+  });
+  it("unknown credit stays unknown, never weak", () => {
+    const u = { ...priya(), creditScoreKnown: false, creditScore: null };
+    const b = rateBand(u, "personal").bucket;
+    expect(b).toBe("unknown");
+  });
+  it("unknown expenses -> estimated + lower confidence", () => {
+    const u = { ...priya(), householdExpenses: "unknown" };
+    const cf = cashFlow(u);
+    expect(cf.expenses.estimated).toBe(true);
+    expect(confidenceScore(u).reasons.join(" ")).toMatch(/expenses estimated/i);
+  });
+  it("sanction and safe stay separate", () => {
+    const r = evaluate(ravi());
+    expect(r.sanction.amount).not.toBe(r.safe.center);
+    expect(r.safe.center).toBeLessThan(r.sanction.amount);
+  });
+  it("requested EMI separate from safe ceiling", () => {
+    const r = evaluate({ ...priya(), requestedAmount: 600000 });
+    expect(r.emiNeeded).toBeDefined();
+    expect(r.emiCeiling).toBeDefined();
+    expect(r.emiNeeded).toBeLessThan(r.emiCeiling);
+    expect(r.emiNeeded).not.toBe(r.emiCeiling);
   });
 });
 

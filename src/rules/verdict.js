@@ -159,42 +159,59 @@ function decideVerdict(profile, cf, emiNeeded) {
       tone: emergencyNeutral(profile)
         ? "This is not a judgement on your need — the numbers simply show no room for repayments today."
         : `For ${purpose}, the numbers show no room for repayments today.`,
+      bounceWarning: profile.recentBounce === true
+        ? "⚠️ Recent payment bounce detected. This increases repayment risk, even though the core issue today is affordability."
+        : null,
     };
   }
   if (cf.fcf <= 0) {
+    const base =
+      profile.recentBounce === true
+        ? "After expenses, existing loans and a safety buffer, nothing is left each month — and a recent bounce makes additional borrowing especially risky."
+        : `After expenses (${fmt(cf.expenses.value)}), existing loans (${fmt(cf.existingEmi.value)}) and a safety buffer, nothing is left each month.`;
     return {
       key: "dont",
       label: "🛑 Don't Borrow",
-      reason: `After expenses (${fmt(cf.expenses.value)}), existing loans (${fmt(cf.existingEmi.value)}) and a safety buffer, nothing is left each month.`,
+      reason: cf.fcf <= 0 ? base : `After expenses (${fmt(cf.expenses.value)}), existing loans (${fmt(cf.existingEmi.value)}) and a safety buffer, nothing is left each month.`,
       tone: emergencyNeutral(profile)
         ? "An emergency loan is understandable — but a new EMI right now risks another missed payment."
-        : "Borrowing now would very likely lead to another missed payment.",
+        : cf.fcf <= 0 && profile.recentBounce === true
+          ? "Your estimated monthly free cash flow is already negative. Adding another EMI would increase repayment pressure — fix the recent bounce first."
+          : "Borrowing now would very likely lead to another missed payment.",
+      bounceWarning:
+        profile.recentBounce === true
+          ? "⚠️ Recent payment bounce detected. Your current affordability may be positive, but taking additional debt could increase repayment risk."
+          : null,
     };
   }
-  // Warning override: recent bounce + expensive existing debt.
-  if (profile.recentBounce === true) {
-    return {
-      key: "dont",
-      label: "🛑 Don't Borrow (right now)",
-      reason: "A repayment bounced recently and existing debt is costly — new debt makes a spiral worse.",
-      tone: "Fix the existing repayments first; a new loan today would very likely bounce too.",
-    };
-  }
+  // Bounce is a serious signal, not an auto-reject. Only force Don't Borrow when FCF is already ≤0 (handled above).
+  // Otherwise fall through to normal affordability and surface a warning.
+  const bounceWarning =
+    profile.recentBounce === true
+      ? "⚠️ Recent payment bounce detected. Your current affordability may be positive, but taking additional debt could increase repayment risk."
+      : null;
+
   if (cf.safeEmi < emiNeeded) {
     return {
       key: "less",
       label: "⚠️ Borrow Less",
       reason: `You can afford something — just not the full ${fmt(profile.requestedAmount)}. Your safe EMI (${fmt(cf.safeEmi)}) is below the ${fmt(emiNeeded)}/month the full amount needs.`,
-      tone: `Consider borrowing closer to your safe amount instead of the full ask.`,
+      tone: bounceWarning
+        ? "Consider borrowing less — and address the recent repayment trouble before adding a new EMI."
+        : `Consider borrowing closer to your safe amount instead of the full ask.`,
+      bounceWarning,
     };
   }
   return {
     key: "borrow",
     label: "✅ Borrow",
     reason: `The requested ${fmt(profile.requestedAmount)} needs about ${fmt(emiNeeded)}/month — inside your safe EMI of ${fmt(cf.safeEmi)}/month with margin.`,
-    tone: emergencyNeutral(profile)
-      ? "The loan fits your cash flow with room to spare."
-      : `For ${purpose}, the loan fits your cash flow with room to spare.`,
+    tone: bounceWarning
+      ? "The loan fits your cash flow with room, but the recent bounce means you should keep a larger safety cushion."
+      : emergencyNeutral(profile)
+        ? "The loan fits your cash flow with room to spare."
+        : `For ${purpose}, the loan fits your cash flow with room to spare.`,
+    bounceWarning,
   };
 }
 
@@ -223,7 +240,7 @@ function buildExplanations(profile, cf, san, fairRange, bucket, conf, verdict, e
     safeAmount: `Your safe borrowing amount is ${fmt(safeCenter)} because that's what a ${fmt(cf.safeEmi)} EMI can cover at a fair rate over ${san.tenureMonths ? "" : ""}a reasonable tenure.`,
     fairRate: `Your fair rate is ${fairRange[0]}–${fairRange[1]}% because ${creditTxt} and this is a ${san ? "" : ""}${laneNoun(profile)} loan.`,
     confidence: `Your confidence is ${conf.level} because ${conf.reasons[0] ?? "the answers were mostly complete and documented"}.`,
-    sanctionGap: `A bank might sanction ${fmt(san.amount)} because banks look mainly at whether you can pay each month (FOIR ${Math.round(san.foirCap * 100)}% of verifiable income) — not at how comfortable that leaves you.`,
+    sanctionGap: `Possible lender sanction ${fmt(san.amount)} is a FOIR estimate (cap ${Math.round(san.foirCap * 100)}% of verifiable income). Your safer borrowing range is derived from cash-flow comfort, not lender eligibility.`,
     verdict: verdict.reason,
     emiNeeded: `The ${fmt(profile.requestedAmount)} you asked for needs ~${fmt(emiNeeded)}/month at a fair rate — compare that with your ${fmt(cf.safeEmi)} safe ceiling.`,
   };
@@ -243,12 +260,13 @@ function buildCard(profile, lane, def, san, sanctionRange, safeRange, fairRange,
     "BORROWER NEGOTIATION CARD",
     "────────────────────────",
     `Profile: ${profile.incomeType.replace("_", " ")} · ${incomeTxt}/month · Credit: ${profile.creditScoreKnown ? profile.creditScore : "unknown"}`,
-    `Loan requested: ${fmt(profile.requestedAmount)} for ${PURPOSE_LABEL[profile.loanPurpose] ?? "your purpose"}`,
-    `Likely bank offer: ${fmt(sanctionRange[0])}–${fmt(sanctionRange[1])}`,
-    `Safe amount for you: ${fmt(safeRange[0])}–${fmt(safeRange[1])}`,
-    `Fair interest rate: ${fairRange[0]}–${fairRange[1]}%`,
-    `Real cost with fees: ~${apr}%`,
-    `Max EMI you should agree to: ${fmt(cf.safeEmi)}/month`,
+    `Requested: ${fmt(profile.requestedAmount)} for ${PURPOSE_LABEL[profile.loanPurpose] ?? "your purpose"}`,
+    `Possible lender range: ${fmt(sanctionRange[0])}–${fmt(sanctionRange[1])}`,
+    `Safer borrowing range: ${fmt(safeRange[0])}–${fmt(safeRange[1])}`,
+    `Fair rate estimate: ${fairRange[0]}–${fairRange[1]}%`,
+    `Approx. all-in annual cost: ~${apr}% (estimate, actual depends on lender fees)`,
+    `Requested-loan EMI: see results`,
+    `Maximum comfortable EMI: ${fmt(cf.safeEmi)}/month`,
     `Why: ${verdict.reason}`,
     `Confidence: ${conf.level}`,
   ];

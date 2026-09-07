@@ -27,7 +27,7 @@ differently from a salaried engineer's salary — because they really are differ
 | What | Value | Why | Source |
 |---|---|---|---|
 | Don't Borrow | FCF ≤ 0 | No real room left each month | My judgement |
-| Dont Borrow (override) | Recent bounce = yes (informal lane) | Already showing debt stress — new debt makes it worse | My judgement |
+| Bounce signal | Recent bounce = yes → warning + confidence −1, Don't Borrow only if FCF ≤ 0 | Bounce raises risk but affordability is the decider; do not brand borrower "bad" | My judgement |
 | Debt-payoff swap check | Loan purpose = debt payoff + existing EMI > 0 → net monthly = needs − old EMI | Shows whether consolidation actually wins vs just adding debt | My judgement |
 | Borrow Less | 0 < FCF but safe EMI < EMI needed for requested amount | Can afford something, not the full ask | My judgement |
 | Borrow | Safe EMI ≥ EMI needed, with margin | Genuinely affordable | My judgement |
@@ -41,7 +41,8 @@ differently from a salaried engineer's salary — because they really are differ
 
 | What | Value | Why | Source |
 |---|---|---|---|
-| Max lender EMI | FOIR cap × sanction-base income − existing EMI | Standard FOIR method | General Indian lending practice |
+| Possible lender sanction (EMI) | FOIR cap × sanction-base income − existing EMI | FOIR is lender-side estimate, not borrower affordability | General Indian lending practice |
+| Safer borrowing range | Derived from cash-flow (FCF → safe EMI → amount) | Borrower-side comfort | My judgement |
 | FOIR cap, personal lane | 45% | Unsecured salaried norm | General market practice |
 | FOIR cap, secured/business lane | 55% | Collateral lowers lender risk | General market practice |
 | FOIR cap, informal lane | 40% | Thin-file / cash income gets tighter caps | General market practice |
@@ -79,15 +80,16 @@ Mid-band rows are judgement interpolations. Confidence narrows the shown range: 
 
 | What | Value | Why | Source |
 |---|---|---|---|
-| APR ≈ nominal + (fee% × 12 ÷ tenure years) | Simplified fee-spreading | Lets borrowers compare 12%+fee vs 13% no-fee honestly | My judgement (approximation, labelled in UI) |
+| Approx. all-in annual cost ≈ nominal + (fee% × 12 ÷ tenure years) | Simplified fee-spreading — shown as "Approx. all-in annual cost" with disclaimer | Lets borrowers compare 12%+fee vs 13% no-fee honestly; actual APR depends on lender fees | My judgement (approximation, labelled in UI) |
 | Default fee assumption | 1% personal/secured · 2% informal | Small-ticket lenders charge more upfront | My judgement |
 
 ## 8. EMI rules (O4)
 
 | What | Value | Why | Source |
 |---|---|---|---|
-| EMI ceiling | = Max Safe EMI (not recomputed) | One number, never two contradicting ceilings | My judgement |
-| Tenure table | 2/3/4/5 yrs at safe amount, fair-mid rate | Shows time-vs-interest trade-off | Standard EMI maths |
+| Maximum safe EMI (ceiling) | = Max Safe EMI (not recomputed) | Comfort boundary, not the recommended EMI | My judgement |
+| Requested-loan EMI | EMI for requested amount at fair-mid rate + safe tenure | Shown alongside safe ceiling so borrower sees headroom | Standard EMI maths |
+| Tenure table | At safer borrowing range centre, lane-aware grid | Shows time-vs-interest trade-off | Standard EMI maths |
 | Lane tenure caps | Personal 5 yrs · informal 5 yrs · secured 10 yrs | Don't normalise decade-long personal debt | My judgement |
 
 ## 9. Stress rules
@@ -95,8 +97,8 @@ Mid-band rows are judgement interpolations. Confidence narrows the shown range: 
 | What | Value | Why | Source |
 |---|---|---|---|
 | Scenario 1 | Income −20% → recompute FCF → still covers the *actual loan EMI*? | The question that matters: "would I still manage *this* EMI?" | My judgement |
-| Scenario 2 | Rate +2pp → recompute EMI on same safe amount → still fits FCF? | Rate shocks are real in floating/small-ticket credit | My judgement |
-| Verdicts | Pass / Tight (≥70% covered) / Fail + new numbers | "Tight" is honest for borderline cases (Ravi) | My judgement |
+| Scenario 2 | Rate +2pp → recompute EMI → PASS if ≤ safe EMI ceiling, TIGHT if ≤ FCF but > safe ceiling, FAIL otherwise | Do not label PASS when stressed EMI exceeds the safety boundary | My judgement |
+| Verdicts | Income drop: Pass / Tight (≥70% covered) / Fail. Rate rise: Pass (≤safe EMI) / Tight (≤FCF but >safe EMI) / Fail | "Tight" is honest for borderline cases (Ravi) | My judgement |
 
 ## 10. Confidence rules
 

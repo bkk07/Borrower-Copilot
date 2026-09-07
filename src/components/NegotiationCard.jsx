@@ -8,14 +8,20 @@ export default function NegotiationCard({ result, text }) {
   const copyText = fallback;
   const hasResult = !!result;
   const r = result;
+  const feeHint = r?.rate?.feePct ? `~${r.rate.feePct}%` : "per lender";
+  const negotiationLine =
+    r && r.rate?.fairRange
+      ? `Ask whether the lender can offer ≤${r.rate.fairRange[1]}% with ${feeHint} processing fee.`
+      : null;
   const rows = hasResult ? [
-    ["Profile", `${r.profile?.incomeType?.replace("_", " ") ?? r.routing?.lane ?? ""} · ${r.cf ? `${formatINR(r.cf.blendedIncome)}/mo` : ""} · Credit: ${r.profile?.creditScoreKnown ? r.profile?.creditScore : "unknown"}`],
-    ["Asked for", `${formatINR(r.profile?.requestedAmount)} for ${r.verdict?.key ?? ""}`],
-    ["Bank might offer", fmtRangeLakh(r.sanction.range)],
-    ["Safe for you", fmtRangeLakh(r.safe.range)],
-    ["Fair rate", `${r.rate.fairRange[0]}–${r.rate.fairRange[1]}%`],
-    ["Real cost (APR)", `~${r.rate.apr}%`],
-    ["Max EMI", `${formatINR(r.cf.safeEmi)}/mo`],
+    ["Requested", fmtRangeLakh([r.profile?.requestedAmount, r.profile?.requestedAmount])],
+    ["Possible lender range", fmtRangeLakh(r.sanction.range)],
+    ["Safer borrowing range", fmtRangeLakh(r.safe.range)],
+    ["Fair rate estimate", `${r.rate.fairRange[0]}–${r.rate.fairRange[1]}%`],
+    ["Approx. all-in annual cost", `~${r.rate.apr}%`],
+    ["Requested-loan EMI", `~${formatINR(r.emiNeeded)}/month`],
+    ["Maximum comfortable EMI", `~${formatINR(r.cf.safeEmi)}/month`],
+    ["Why", r.verdict.reason],
     ["Confidence", r.confidence.level],
   ] : null;
   const waText = encodeURIComponent(copyText);
@@ -51,7 +57,7 @@ export default function NegotiationCard({ result, text }) {
               <span className="font-mono text-emerald-50">{v}</span>
             </div>
           ))}
-          <p className="mt-2 text-[12px] leading-relaxed text-emerald-50"><span className="font-bold text-white">Why: </span>{r.verdict.reason}</p>
+          {negotiationLine ? <p className="mt-2 rounded bg-white/10 p-2 text-[12px] font-semibold text-amber-200">💬 {negotiationLine} <span className="font-normal text-emerald-50">(Approx. all-in cost is an estimate — actual APR depends on the lender's fees.)</span></p> : null}
           {r.lenderComparison && <p className="text-[12px] text-amber-200">{r.lenderComparison.text}</p>}
         </div>
       ) : (

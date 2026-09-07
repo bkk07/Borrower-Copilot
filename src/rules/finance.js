@@ -62,6 +62,31 @@ export function fmtRangeLakh([lo, hi]) {
   return `${fmtLakh(lo)}–${fmtLakh(hi)}`;
 }
 
+// Rounded headline form for ranges — avoids false precision like ₹17,89,209.
+export function fmtLakhRounded(n) {
+  const v = Number(n);
+  if (!Number.isFinite(v) || v <= 0) return "≈ ₹0";
+  const a = Math.abs(v);
+  if (a >= 10000000) return `₹${(v / 10000000).toFixed(1).replace(/\.0$/, "")} Cr`;
+  if (a >= 100000) {
+    // snap to 0.5L for <10L, 1L for >=10L
+    const step = a < 1000000 ? 50000 : 100000;
+    const r = Math.round(v / step) * step;
+    return fmtLakh(r);
+  }
+  if (a >= 10000) {
+    const r = Math.round(v / 5000) * 5000;
+    return `₹${(r / 1000).toFixed(0)}k`;
+  }
+  return formatINR(Math.round(v / 1000) * 1000);
+}
+
+export function fmtRangeLakhRounded([lo, hi]) {
+  if (!lo && !hi) return "≈ ₹0";
+  // when both tiny, keep the precise helper — headline will be ≈₹0 branch above
+  return `${fmtLakhRounded(lo)}–${fmtLakhRounded(hi)}`;
+}
+
 export function clamp(n, lo, hi) {
   return Math.min(hi, Math.max(lo, n));
 }

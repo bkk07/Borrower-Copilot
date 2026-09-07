@@ -3,7 +3,7 @@ import OutputCard from "./OutputCard.jsx";
 import StressTestCard from "./StressTestCard.jsx";
 import NegotiationCard from "./NegotiationCard.jsx";
 import { ConfBadge } from "./ui.jsx";
-import { formatINR, fmtLakh, fmtRangeLakh } from "../rules/finance.js";
+import { formatINR, fmtRangeLakhRounded, fmtLakhRounded } from "../rules/finance.js";
 
 function VerdictHero({ result, profile }) {
   const r = result;
@@ -24,11 +24,19 @@ function VerdictHero({ result, profile }) {
         <h2 className="font-display mt-3 text-4xl font-semibold md:text-5xl"><span>{theme.icon}</span> {r.verdict.label.replace(/^(✅|⚠️|🛑)\s*/, "")}</h2>
         <p className="mt-2 max-w-xl text-[16px] leading-relaxed text-white/90">{r.verdict.reason}</p>
         <p className="mt-1 max-w-xl text-sm italic text-white/70">{r.verdict.tone}</p>
+        {r.verdict.bounceWarning ? (
+          <p className="mt-3 rounded-xl bg-amber-100 p-3 text-sm font-medium text-amber-900">{r.verdict.bounceWarning}</p>
+        ) : null}
+        {r.verdict.key === "dont" && r.cf.fcf <= 0 ? (
+          <p className="mt-2 rounded-xl bg-white/15 p-3 text-sm text-white/90">
+            A lender may still offer a loan, but that does not mean the loan is affordable for you. Your free cash flow is already around {fmtLakhRounded(r.cf.fcf)}/month.
+          </p>
+        ) : null}
         <div className="mt-4 grid grid-cols-3 gap-2">
           {[
-            ["Asked for", fmtLakh(profile.requestedAmount)],
-            ["Needs /mo", `${formatINR(r.emiNeeded)}`],
-            ["Safe EMI", `${formatINR(r.emiCeiling)}/mo`],
+            ["Asked for", fmtLakhRounded(profile.requestedAmount)],
+            [r.verdict.key === "dont" ? "Would need /mo" : "Needs /mo", `${formatINR(r.emiNeeded)}`],
+            ["Maximum safe EMI", `${formatINR(r.emiCeiling)}/mo`],
           ].map(([l, v]) => (
             <div key={l} className="rounded-xl bg-black/25 p-3 text-center">
               <p className="text-[11px] uppercase tracking-widest text-white/60">{l}</p>
@@ -46,20 +54,20 @@ function DualBars({ sanctionRange, safeRange }) {
   const [on, setOn] = useState(false);
   useEffect(() => { const t = requestAnimationFrame(() => requestAnimationFrame(() => setOn(true))); return () => cancelAnimationFrame(t); }, []);
   const max = Math.max(sanctionRange[1], safeRange[1], 1);
-  const row = (label, range, color, use) => (
+  const row = (label, range, color, use, sub) => (
     <div>
       <div className="flex items-baseline justify-between">
         <p className="text-sm font-bold">{label} {use && <span className="ml-1 rounded-md bg-[#0b3b2c] px-1.5 py-0.5 text-[11px] text-white">USE THIS</span>}</p>
-        <p className="font-display text-lg font-bold">{fmtRangeLakh(range)}</p>
+        <p className="font-display text-lg font-bold">{fmtRangeLakhRounded(range)}</p>
       </div>
       <div className="bc-bar mt-1"><div style={{ width: on ? `${Math.max(2, (range[1] / max) * 100)}%` : "0", background: color }} /></div>
-      <p className="mt-0.5 text-xs text-[#6f6355]">up to {fmtLakh(range[1])} · from {fmtLakh(range[0])}</p>
+      <p className="mt-0.5 text-xs text-[#6f6355]">{sub}</p>
     </div>
   );
   return (
     <div className="grid gap-4">
-      {row("🏦 Bank might sanction", sanctionRange, "#b3a893", false)}
-      {row("🫵 Safe for you", safeRange, "linear-gradient(90deg,#0b3b2c,#1d6b4d)", true)}
+      {row("Possible lender sanction", sanctionRange, "#b3a893", false, `lender-side FOIR estimate · up to ${fmtLakhRounded(sanctionRange[1])}`)}
+      {row("Safer borrowing range", safeRange, "linear-gradient(90deg,#0b3b2c,#1d6b4d)", true, `borrower-side cash-flow comfort · up to ${fmtLakhRounded(safeRange[1])}`)}
     </div>
   );
 }
@@ -97,28 +105,45 @@ export default function ResultsScreen({ result, profile, onRestart, onEdit }) {
 
       <div className="mt-4 grid gap-4">
         <OutputCard kicker="O2 · How much?" title="Two numbers. Never one." badge={<ConfBadge level={r.confidence.level} />} delay={1}
-          why={`${r.explanations.sanctionGap} Your safe amount uses free cash flow (${formatINR(r.cf.fcf)}/month → ${formatINR(r.cf.safeEmi)} safe EMI), not the bank's FOIR maths.`}>
-          <DualBars sanctionRange={r.sanction.range} safeRange={r.safe.range} />
-          <p className="mt-2 text-[13px] text-[#6f6355]">Bank: FOIR {Math.round(r.sanction.foirCap * 100)}% · {r.sanction.tenureMonths} mo @ ~{r.sanction.typicalRate}%{r.sanction.cappedByLtv ? " · capped at 50% of property value" : ""} &nbsp;|&nbsp; Safe: {r.safe.tenureMonths} mo @ {r.rate.fairMid}%</p>
+          why={`${r.explanations.sanctionGap} The safer range uses your free cash flow (${formatINR(r.cf.fcf)}/month → ${formatINR(r.cf.safeEmi)} safe EMI). The lender sanction is a FOIR estimate, not what you can comfortably afford.`}>
+          <div className="rounded-xl bg-[#faf5ea] p-3 text-xs leading-relaxed text-[#4a4238]">A lender may approve more than what looks comfortable based on your current cash flow.</div>
+          <div className="mt-3"><DualBars sanctionRange={r.sanction.range} safeRange={r.safe.range} /></div>
+          <p className="mt-2 text-[13px] text-[#6f6355]">Possible lender sanction: FOIR {Math.round(r.sanction.foirCap * 100)}% · {r.sanction.tenureMonths} mo @ ~{r.sanction.typicalRate}%{r.sanction.cappedByLtv ? " · capped at 50% of property value" : ""} &nbsp;|&nbsp; Safer range: {r.safe.tenureMonths} mo @ {r.rate.fairMid}%</p>
           {r.verdict.key === "less" && (
-            <p className="mt-2 rounded-xl bg-[#faecd2] p-3 text-sm">👉 Consider <b>{fmtLakh(r.safe.center)}</b> instead of {fmtLakh(profile.requestedAmount)} — same purpose, survivable EMI.</p>
+            <p className="mt-2 rounded-xl bg-[#faecd2] p-3 text-sm">👉 Consider <b>{fmtLakhRounded(r.safe.center)}</b> instead of {fmtLakhRounded(profile.requestedAmount)} — same purpose, survivable EMI.</p>
           )}
           {r.safe.center <= 0 && (
-            <p className="mt-2 rounded-xl bg-[#f9e2df] p-3 text-sm">👉 Safe amount is ≈ ₹0 today. Any new EMI risks another missed payment — see the note below before borrowing.</p>
+            <p className="mt-2 rounded-xl bg-[#f9e2df] p-3 text-sm">A lender may still offer a loan, but that does not mean the loan is affordable for you. Your safer borrowing range is ≈ ₹0 today.</p>
           )}
         </OutputCard>
 
         <OutputCard kicker="O3 · Fair rate" title="Know the band before they quote" badge={<ConfBadge level={r.confidence.level} />} delay={1}
-          why={`${r.explanations.fairRate} Real cost adds the ${r.rate.feePct}% processing fee spread over the loan life (simplified APR — an approximation, see RULES.md).`}>
+          why={`${r.explanations.fairRate} Approx. all-in cost adds the ${r.rate.feePct}% processing fee spread over the loan life (illustrative estimate, see RULES.md).`}>
           <RateTrack fullBand={r.rate.fullBand} fairRange={r.rate.fairRange}
-            aprLabel={<> {r.rate.nominal}% + ~{r.rate.feeDrag}% fee ≈ <b className="text-[#1c1611]">{r.rate.apr}%</b> real cost</>} />
+            aprLabel={<><span className="text-xs font-semibold uppercase tracking-widest text-[#6f6355]">Approx. all-in annual cost</span> <span className="ml-2">{r.rate.nominal}% + ~{r.rate.feeDrag}% fee ≈ <b className="text-[#1c1611]">{r.rate.apr}%</b></span></>} />
+          <p className="mt-1 text-xs text-[#6f6355]">This is an estimate using the assumed processing fee. Actual APR depends on the lender's fees and charges.</p>
           <p className="mt-3 rounded-xl bg-[#faf5ea] p-3 text-sm">If the lender quotes above <b>{r.rate.fairRange[1]}%</b>, push back — cite your {profile.creditScoreKnown ? `score of ${profile.creditScore}` : "profile"} and this band.</p>
           {r.lenderComparison && <p className="mt-2 rounded-xl bg-[#e2ece4] p-3 text-sm font-medium">{r.lenderComparison.text}</p>}
         </OutputCard>
 
         <OutputCard kicker="O4 · EMI ceiling" title={r.emiCeiling > 0 ? `Never agree above ${formatINR(r.emiCeiling)}/month` : "No safe EMI today — agree to none"} badge={<ConfBadge level={r.confidence.level} />} delay={2}
-          why={`${r.explanations.safeEmi} The ${fmtLakh(profile.requestedAmount)} you asked for needs ~${formatINR(r.emiNeeded)}/month at a fair rate.`}>
-          <p className="mb-1 text-xs font-bold uppercase tracking-widest text-[#6f6355]">Tenure trade-off · {fmtLakh(r.safe.center)} @ {r.rate.fairMid}%</p>
+          why={`${r.explanations.safeEmi} The ${fmtLakhRounded(profile.requestedAmount)} you asked for needs ~${formatINR(r.emiNeeded)}/month at a fair rate.`}>
+          <div className="grid gap-2 rounded-xl bg-white p-3">
+            <div className="flex items-baseline justify-between">
+              <span className="text-xs font-bold uppercase tracking-widest text-[#6f6355]">Your requested loan</span>
+              <span className="font-display text-lg font-bold">{fmtLakhRounded(profile.requestedAmount)}</span>
+            </div>
+            <div className="flex items-baseline justify-between text-sm">
+              <span className="text-[#4a4238]">Estimated EMI</span>
+              <span className="font-bold">~{formatINR(r.emiNeeded)}/month</span>
+            </div>
+            <div className="flex items-baseline justify-between border-t border-[#e3d9c6] pt-2 text-sm">
+              <span className="font-bold text-[#0b3b2c]">Your maximum safe EMI</span>
+              <span className="font-bold text-[#0b3b2c]">~{formatINR(r.emiCeiling)}/month</span>
+            </div>
+            <p className="text-xs text-[#6f6355]">{r.emiNeeded <= r.emiCeiling && r.emiCeiling > 0 ? "Your requested loan's estimated EMI is below your current safe EMI ceiling." : r.emiCeiling > 0 ? "Your requested loan's EMI would be above your safe ceiling — consider borrowing less." : "There is no comfortable EMI headroom today."}</p>
+          </div>
+          <p className="mb-1 mt-3 text-xs font-bold uppercase tracking-widest text-[#6f6355]">Tenure trade-off · {fmtLakhRounded(r.safe.center)} @ {r.rate.fairMid}%</p>
           <table className="bc-table w-full text-[15px]">
             <thead><tr><th>Tenure</th><th>EMI / mo</th><th>Total interest</th></tr></thead>
             <tbody>
@@ -146,7 +171,12 @@ export default function ResultsScreen({ result, profile, onRestart, onEdit }) {
         <div className="bc-card anim-rise-2 p-5">
           <p className="flex items-center gap-2 font-bold">🔍 Every number, traced <ConfBadge level={r.confidence.level} /></p>
           <ul className="mt-2 list-disc space-y-1.5 pl-5 text-[14.5px] text-[#4a4238]">
-            <li>{r.explanations.safeEmi}{r.cf.expenses.estimated ? " (expenses estimated — you didn't confirm them)" : ""}{r.cf.existingEmi.estimated ? " (EMI estimated — amount unknown)" : ""}</li>
+            <li>
+              Safe EMI ~{formatINR(r.cf.safeEmi)}/month — monthly income {fmtLakhRounded(r.cf.blendedIncome)}, existing EMI {r.cf.existingEmi.estimated ? <span>~{formatINR(r.cf.existingEmi.value)}/month <span className="rounded bg-amber-100 px-1 py-0.5 text-xs font-bold text-amber-900">⚠️ Estimated</span></span> : `${formatINR(r.cf.existingEmi.value)}/month`}, essential expenses {r.cf.expenses.estimated ? <span>~{formatINR(r.cf.expenses.value)}/month <span className="rounded bg-amber-100 px-1 py-0.5 text-xs font-bold text-amber-900">⚠️ Estimated because you did not provide an amount.</span></span> : `${formatINR(r.cf.expenses.value)}/month`}, safety cushion {Math.round(r.cf.buffer.rate * 100)}%{r.cf.upcomingMonthly ? ` + ~${formatINR(r.cf.upcomingMonthly)}/month upcoming expense` : ""} → FCF {fmtLakhRounded(r.cf.fcf)}/month → ×0.8 breathing room.
+            </li>
+            <li>
+              Credit score: {r.profile?.creditScoreKnown ? `${r.profile.creditScore} (${r.rate.bucket})` : <span>Unknown — <em>this does not mean your credit score is poor.</em> Band stays wide at {r.rate.fullBand[0]}–{r.rate.fullBand[1]}%.</span>}
+            </li>
             <li>{r.explanations.confidence}</li>
             {r.confidence.reasons.slice(1, 4).map((x) => <li key={x}>{x}.</li>)}
           </ul>
